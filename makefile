@@ -1,7 +1,7 @@
 # Need C++20 for erase_if(unordered_multimap&, predicate).  Otherwise C++17 would do.
 # -Werror -ansi -pedantic -Wall -Wextra -Wno-unused-parameter
 CC = g++  # notice CFLAGS contains -g which will compile everything in debug mode!
-CFLAGS = -g --std=c++20 -Wall -Wextra -Wno-unused-parameter -Iupnp -Isign -pthread
+CFLAGS = -g --std=c++20 -Wall -Wextra -Wno-unused-parameter -pthread -Ilib
 DEPS = config.h lib/sock.h lib/client.h lib/sign.h lib/tweetnacl.h
 OBJ = main.o config.o lib/sock.o lib/client.o lib/sign.o lib/tweetnacl.o
 

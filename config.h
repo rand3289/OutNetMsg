@@ -7,18 +7,19 @@ struct Config{
     uint32_t outIP;    // OutNet IP
     uint16_t outPort;  // OutNet port
     int refreshTime;   // OutNet update interval seconds
-    string friendWord; // friendword
+    std::string friendWord; // friendword
     uint16_t port;     // server port
-    Config();
+
+    bool load();
     bool save();
 };
 
 
 struct Contact{
-    char level;      // 0 = your best friends (notification any time)
-    string key;     // public key of a user
-    string name;    // just like a key, nick is set by the user of the key
-    string comment; // comments are set by you and are never shared with other users 
+    std::string key;     // public key of a user
+    std::string name;    // just like a key, nick is set by the user of the key
+    std::string comment; // comments are set by you and are never shared with other users
+    int level;      // 0 are your best friends (notify any time)
 };
 
-#endif INCLUDED_CONFIG_H
+#endif // INCLUDED_CONFIG_H
