@@ -1,14 +1,17 @@
 #include "config.h"
+#include <string>
+using namespace std;
 
-const string configName = "onmsg.cfg"
+
+const string configName = "onmsg.cfg";
 
 // load vars from configName
 bool Config::load(){
-// TODO:
+    return true; // TODO:
 }
 
 
 // save variables to configName
-bool save(){
-// TODO:
+bool Config::save(){
+    return true; // TODO:
 }
