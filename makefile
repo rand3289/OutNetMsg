@@ -3,7 +3,7 @@
 CC = g++  # notice CFLAGS contains -g which will compile everything in debug mode!
 CFLAGS = -g --std=c++20 -Wall -Wextra -Wno-unused-parameter -pthread -Ilib
 DEPS = config.h lib/sock.h lib/client.h lib/sign.h lib/tweetnacl.h
-OBJ = main.o config.o lib/sock.o lib/client.o lib/sign.o lib/tweetnacl.o
+OBJ = main.o webs.o config.o lib/sock.o lib/client.o lib/sign.o lib/tweetnacl.o
 
 # Linux generates a warning when using -static
 # Using 'gethostbyname' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking

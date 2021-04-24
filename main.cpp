@@ -70,34 +70,7 @@ bool OutNet::query(vector<Service>& services, int ageSeconds){ // TODO: use ageS
 }
 
 
-bool sendFile(Sock& conn, char* request){
-    char * end = findReverse(request, "HTTP/1.1");
-    if(nullptr == end){ return false; } // malformed HTTP request // TODO: return 400 (bad request)?
-    *end = 0; // null terminate the path
-    auto file = ltrim(rtrim(request));
-    string path = "./data"; // TODO: do not allow directories or sanitize path (use <filesystem> lib)
-    path += file;
-
-    ifstream f(path, ios::binary);
-    if(!f){ return false; } // TODO: 404 not found
-    f.seekg(0, ios::end);
-    size_t fsize = f.tellg();
-    f.seekg(0, std::ios::beg);
-    cout << "sending file: " << path << " (" << fsize << " bytes)" << endl;
-
-    stringstream ssh; // ss header
-    ssh << "HTTP/1.1 200 OK\r\n"; // second "\r\n" separates headers from html
-//    ssh << "Content-Type: text/html\r\n";
-    ssh << "Content-Type: application/octet-stream\r\n";
-    ssh << "Content-Length: " << fsize << "\r\n";
-    ssh << "\r\n";
-    char buff[1024*1024];
-    while( f.read(buff, sizeof(buff)) ){
-        size_t size = f.gcount();
-        conn.write(buff, size);
-    }
-    return true;
-}
+bool sendFile(Sock& conn, char* request);
 
 
 struct State {
