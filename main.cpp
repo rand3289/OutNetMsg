@@ -5,7 +5,6 @@
 #include <string>
 #include <iostream>
 #include <sstream>
-#include <fstream>
 #include <thread> // sleep_for()
 using namespace std;
 #include <chrono>
@@ -80,6 +79,16 @@ struct State {
 };
 
 
+bool State::sendInfo(Sock& client, char* request){
+    // TODO:
+}
+
+
+bool State::processCommand(Sock& client, char* request){
+    // TODO:
+}
+
+
 int main(int argc, char* argv[]){
     initNetwork(); //
 
@@ -94,12 +103,16 @@ int main(int argc, char* argv[]){
         config.save();
     }
 
+    cout << "Running server on port " << port << endl;
+    cout << "Registering server with OutNet" << endl;
+
     State state;
     OutNet outnet(config.outIP, config.outPort);
     outnet.registerService();
 
     system_clock::time_point last = system_clock::now();
     char buff[2048];
+    cout << "running..." << endl;
 
     // accept connection and process one of 2 types of requests:
     // POST when a new message arrives or GET when GUI requests an update
@@ -116,6 +129,7 @@ int main(int argc, char* argv[]){
             client.setRWtimeout(config.readWriteTimeout); // so I can disconnect slow clients
             int rd = client.readLine(buff, sizeof(buff));
             if(rd > 0){ // error reading data? (connection closed/timed out)
+            cout << "REQUEST: " << buff << endl;
 //                string line = buff; // save it for debugging
 //                printAscii((const unsigned char*)buff, rd);
                 if( 0==strncmp(buff,"GET ",4) ){         // HTTP GET query

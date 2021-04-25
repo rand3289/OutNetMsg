@@ -1,10 +1,12 @@
 #include "sock.h"
-#include <cstring> // strlen
+#include <cstring> // strlen()
 #include <string>
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <filesystem>
 using namespace std;
+using namespace std::filesystem;
 
 
 string& ltrim(string& s){ // trim white spaces on the left
@@ -23,9 +25,14 @@ string& rtrim(string& s){ // trim white spaces on the right
 
 char* findReverse(char* haystack, char* needle){
     for(char* end = haystack+strlen(haystack)-strlen(needle); end >= haystack; --end) {
-        if( 0==strstr(end,needle) ){ return end; }
+        if( 0==strcmp(end,needle) ){ return end; }
     }
     return nullptr;
+}
+
+
+string getMime(const string& extension) {
+    return "application/octet-stream";
 }
 
 
@@ -46,20 +53,23 @@ bool sendFile(Sock& conn, char* request){
 
     string req = request;
     auto file = ltrim(rtrim(req));
-    string path = "./data"; // TODO: do not allow directories or sanitize path (use <filesystem> lib)
-    path += file;
+    string fullPath = "./data"; // TODO: do not allow directories or sanitize path
+    fullPath += file;
 
-    ifstream f(path, ios::binary);
+    string ext = path(file).extension();
+    string mime = getMime(ext);
+
+    ifstream f(fullPath, ios::binary);
     if(!f){ return false; } // TODO: 404 not found
     f.seekg(0, ios::end);
     size_t fsize = f.tellg();
     f.seekg(0, std::ios::beg);
-    cout << "sending file: " << path << " (" << fsize << " bytes)" << endl;
+    cout << "sending file: " << fullPath << " (" << fsize << " bytes)" << endl;
 
     stringstream ssh; // ss header
     ssh << "HTTP/1.1 200 OK\r\n"; // second "\r\n" separates headers from html
 //    ssh << "Content-Type: text/html\r\n";
-    ssh << "Content-Type: application/octet-stream\r\n";
+    ssh << "Content-Type: "<< mime << "\r\n"; // ex: application/octet-stream
     ssh << "Content-Length: " << fsize << "\r\n";
     ssh << "\r\n";
     char buff[1024*1024];
