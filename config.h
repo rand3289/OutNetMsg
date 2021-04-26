@@ -9,7 +9,7 @@ struct Config {
     int readWriteTimeout;   // server send() recv() timeout in seconds
     uint32_t outIP;         // OutNet IP
     uint16_t outPort;       // OutNet port number
-    uint16_t serverPort;    // server port number
+    uint16_t serverPort=2778;    // server port number
     uint16_t trayPort;      // tray icon notification port number
 
     bool load();

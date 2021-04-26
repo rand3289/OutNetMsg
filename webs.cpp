@@ -1,4 +1,5 @@
 #include "sock.h"
+#include <map>
 #include <cstring> // strlen()
 #include <string>
 #include <iostream>
@@ -67,7 +68,6 @@ bool sendFile(Sock& conn, char* request){
 
     stringstream ssh; // ss header
     ssh << "HTTP/1.1 200 OK\r\n"; // second "\r\n" separates headers from html
-//    ssh << "Content-Type: text/html\r\n";
     ssh << "Content-Type: "<< mime << "\r\n"; // ex: application/octet-stream
     ssh << "Content-Length: " << fsize << "\r\n";
     ssh << "\r\n";
@@ -80,7 +80,6 @@ bool sendFile(Sock& conn, char* request){
 }
 
 
-#include <map>
 static map<string,string> mimeTypes = {
 {".aac",	"audio/aac"},
 {".arc",	"application/x-freearc"},
