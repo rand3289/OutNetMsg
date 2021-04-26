@@ -32,7 +32,7 @@ char* findReverse(char* haystack, char* needle){
 
 
 string getMime(const string& extension) {
-    return "application/octet-stream";
+    return "text/html"; // "application/octet-stream";
 }
 
 
@@ -60,7 +60,10 @@ bool sendFile(Sock& conn, char* request){
     string mime = getMime(ext);
 
     ifstream f(fullPath, ios::binary);
-    if(!f){ return false; } // TODO: 404 not found
+    if(!f){ 
+        writeStatus(conn, 404, "NOT FOUND");
+        return false;
+    } // TODO: 404 not found
     f.seekg(0, ios::end);
     size_t fsize = f.tellg();
     f.seekg(0, std::ios::beg);
@@ -72,8 +75,11 @@ bool sendFile(Sock& conn, char* request){
     ssh << "Content-Type: "<< mime << "\r\n"; // ex: application/octet-stream
     ssh << "Content-Length: " << fsize << "\r\n";
     ssh << "\r\n";
+    conn.write( ssh.str().c_str(), ssh.str().length() );
+
     char buff[1024*1024];
-    while( f.read(buff, sizeof(buff)) ){
+    while( !f.eof() ){
+        f.read(buff, sizeof(buff) );
         size_t size = f.gcount();
         conn.write(buff, size);
     }
