@@ -69,7 +69,7 @@ bool OutNet::query(vector<Service>& services, int ageSeconds){ // TODO: use ageS
 }
 
 
-bool sendFile(Sock& conn, char* request);
+bool sendFile(Sock& conn, char* request); // in webs.cpp
 
 
 struct State {
@@ -129,9 +129,7 @@ int main(int argc, char* argv[]){
             client.setRWtimeout(config.readWriteTimeout); // so I can disconnect slow clients
             int rd = client.readLine(buff, sizeof(buff));
             if(rd > 0){ // error reading data? (connection closed/timed out)
-            cout << "REQUEST: " << buff << endl;
-//                string line = buff; // save it for debugging
-//                printAscii((const unsigned char*)buff, rd);
+                cout << "REQUEST: " << buff << endl;
                 if( 0==strncmp(buff,"GET ",4) ){         // HTTP GET query
                     if(0==strncmp(buff+4,"/info?", 6)){  // request for information (JSON)
                         state.sendInfo(client, buff+10);
@@ -141,7 +139,7 @@ int main(int argc, char* argv[]){
                 } else if(0==strncmp(buff, "POST ",5) ){ // HTTP POST - this is a command or a message
                     state.processCommand(client, buff+5);
                 }
-                this_thread::sleep_for(seconds(2));
+//                this_thread::sleep_for(seconds(2));
             }
         }
         auto now = system_clock::now();
