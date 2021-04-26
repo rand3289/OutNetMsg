@@ -26,7 +26,7 @@ struct Service {
 class OutNet{
     HostInfo service;
     vector<string> filters;
-    uint32_t sel = SELECTION::IP | SELECTION::PORT | SELECTION::AGE | SELECTION::RKEY | SELECTION::ISCHK | SELECTION::RSVCF;
+    uint32_t sel = SELECT::LSVC |SELECT::IP | SELECT::PORT | SELECT::AGE | SELECT::RKEY | SELECT::ISCHK | SELECT::RSVCF;
 public:
     OutNet(uint32_t outNetIP, uint16_t outNetPort);
     bool registerService();
@@ -84,6 +84,7 @@ bool State::sendInfo(Sock& client, char* request){
 }
 
 
+// commands can be of different types  all of them are encoded in JSON
 bool State::processCommand(Sock& client, char* request){
     // TODO:
 }
