@@ -143,10 +143,10 @@ static map<string,string> mimeTypes = {
 
 
 string& getMime(const string& extension) {
-    static string bin = "application/octet-stream";
     auto it = mimeTypes.find(extension);
     if( end(mimeTypes) != it ){
         return it->second;
     }
+    static string bin = "application/octet-stream"; // default mime type (browser offers to save file)
     return bin;
 }

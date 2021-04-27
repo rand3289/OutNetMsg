@@ -1,7 +1,7 @@
 #include "config.h"
 #include "state.h"
-#include "client.h" // lib dir
-#include "sock.h"   // lib dir
+#include "client.h" // in lib dir
+#include "sock.h"   // in lib dir
 #include <vector>
 #include <string>
 #include <iostream>
@@ -10,9 +10,11 @@
 using namespace std;
 #include <chrono>
 using namespace std::chrono;
+bool sendFile(Sock& conn, char* request); // in webs.cpp
 // TODO: create "LITE" client which does not perform signature verification
 // TODO: allow clients to sign the service registration request
 
+// TODO: search messages for keywords
 
 class OutNet{
     HostInfo service;
@@ -21,7 +23,7 @@ class OutNet{
 public:
     OutNet(uint32_t outNetIP, uint16_t outNetPort);
     bool registerService();
-    bool query(vector<Service>& peers, int ageSeconds);
+    bool query(vector<Service>& peers, vector<string>& local, int ageSeconds);
 };
 
 
@@ -46,9 +48,12 @@ bool OutNet::registerService(){
 }
 
 
-bool OutNet::query(vector<Service>& services, int ageSeconds){ // TODO: use ageSeconds to construct a filter
+// TODO: use ageSeconds to construct a filter
+bool OutNet::query(vector<Service>& services, vector<string>& local, int ageSeconds){
+    service.services.clear(); // TODO: this is a hack, put local services into "local" right away.
     vector<HostInfo> newData; // results will be returned here
     queryOutNet(sel, service, newData, 0, 10, &filters);
+    std::copy( begin(service.services), end(service.services), back_inserter(local) );
 
     for(HostInfo& hi: newData){
         cout << Sock::ipToString(hi.host) << ":" << hi.port << endl;
@@ -60,9 +65,14 @@ bool OutNet::query(vector<Service>& services, int ageSeconds){ // TODO: use ageS
 }
 
 
-bool sendFile(Sock& conn, char* request); // in webs.cpp
-
-
+// After init/registration, the service listens for incoming connections.
+// It accepts a connection and processes one of 2 types of requests:
+// POST when a message/command arrives or GET when GUI requests an update
+// Messages get appended to a message list for GUI to retrieve later.
+// POST data is in JSON format.
+// Some posts (messages from friends) are sent as notifications to "tray app".
+// POST gets an OK or DENIED/BANNED response
+// GET can get a file from /data/ dir or info (messages or lists) in JSON format
 int main(int argc, char* argv[]){
     initNetwork(); //
 
@@ -88,13 +98,6 @@ int main(int argc, char* argv[]){
     char buff[2048];
     cout << "running..." << endl;
 
-    // accept connection and process one of 2 types of requests:
-    // POST when a new message arrives or GET when GUI requests an update
-    // POST uploads binary data which gets processed and put into a JSON message list
-    // some posts are sent as notification to "tray app"
-    // POST gets an OK or DENIED/BANNED response
-    // GET can get a file from /data/ dir or JSON message list
-    // TODO: need messages for creating lists, moving contacts to friend list, marking msgs "read" etc.
     while(true){
         Sock client;
         if( server.accept(client) > 0 ){
@@ -102,25 +105,24 @@ int main(int argc, char* argv[]){
             // TODO: check if ip is blacklisted   There is a second blacklist for keys (save keys only)
             client.setRWtimeout(config.readWriteTimeout); // so I can disconnect slow clients
             int rd = client.readLine(buff, sizeof(buff));
-            if(rd > 0){ // error reading data? (connection closed/timed out)
-                cout << "REQUEST: " << buff << endl;
-                if( 0==strncmp(buff,"GET ",4) ){         // HTTP GET query
-                    if(0==strncmp(buff+4,"/info?", 6)){  // request for information (JSON)
-                        state.sendInfo(client, buff+10);
-                    } else {                             // request for a static file
-                        sendFile(client, buff+4);
-                    }
-                } else if(0==strncmp(buff, "POST ",5) ){ // HTTP POST - this is a command or a message
-                    state.processCommand(client, buff+5);
+            if(rd <= 0){ continue; }// error reading data? (connection closed/timed out)
+            cout << "REQUEST: " << buff << endl;
+            if( 0==strncmp(buff,"GET ",4) ){         // HTTP GET query
+                if(0==strncmp(buff+4,"/info?", 6)){  // request for information (JSON)
+                    state.sendInfo(client, buff+10);
+                } else {                             // request for a static file
+                    sendFile(client, buff+4);
                 }
-//                this_thread::sleep_for(seconds(2));
+            } else if(0==strncmp(buff, "POST ",5) ){ // HTTP POST - this is a command or a message
+                state.processCommand(client, buff+5);
             }
+//            this_thread::sleep_for(seconds(2));
         }
         auto now = system_clock::now();
         auto delta = now - last;
         auto sec = duration_cast<seconds>(delta).count();
         if( sec > config.refreshTime ){
-            outnet.query(state.services, sec); //  pull updates from outnet
+            outnet.query(state.peers, state.services, sec); //  pull updates from outnet
             last = now;
         }
     } // while

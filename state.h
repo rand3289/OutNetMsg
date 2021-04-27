@@ -15,18 +15,30 @@ struct Service {
 };
 
 
-enum CMD {           // types of commands in HTTP request
-    MSG,        // someone is sending you a message
-    MSG_OUT,    // you are sending a message to someone
-    GRP_CREATE, // creating a new group/list
-    GRP_DELETE, // deleting a group
+// permanent groups: INVITES, BANNED and FRIENDS
+enum CMD {      // types of commands in HTTP request
+    INVITE,     // invitation to become a friend or join a group
+    MSG,        // direct or group message
+    GRP_LEAVE,  // group leave request
+
+// these are GUI commands
+    MSG_USER,   // send a message to a user
+    MSG_GROUP,  // send a message to a group
+    MSG_SEEN,   // mark message read
+
+    GRP_CREATE, // create a new group/list
+    GRP_DELETE, // delete a group
     GRP_ADD,    // adding a user to a group/list
-    GRP_RM      // removing a user from a group/list
+    GRP_RM,     // removing a user from a group/list
 };
 
 
-struct State {
-    std::vector<Service> services;
+class State {
+    bool msgFrom(const std::string& key, const std::string& msg, const std::string& signature);
+    bool msgTo(const std::string& key, const std::string& msg);
+public:
+    std::vector<Service> peers;
+    std::vector<std::string> services; // local
     bool sendInfo(Sock& client, char* request);
     bool processCommand(Sock& client, char* request);    
 };
