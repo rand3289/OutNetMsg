@@ -1,6 +1,7 @@
 #include "config.h"
-#include "sock.h"   // lib dir
+#include "state.h"
 #include "client.h" // lib dir
+#include "sock.h"   // lib dir
 #include <vector>
 #include <string>
 #include <iostream>
@@ -11,16 +12,6 @@ using namespace std;
 using namespace std::chrono;
 // TODO: create "LITE" client which does not perform signature verification
 // TODO: allow clients to sign the service registration request
-
-
-struct Service {
-    uint32_t ip;
-    uint16_t port;
-    system_clock::time_point lastSeen;
-    unsigned char key[32];
-    bool keyVerified;
-    // Contact???
-};
 
 
 class OutNet{
@@ -70,24 +61,6 @@ bool OutNet::query(vector<Service>& services, int ageSeconds){ // TODO: use ageS
 
 
 bool sendFile(Sock& conn, char* request); // in webs.cpp
-
-
-struct State {
-    vector<Service> services;
-    bool sendInfo(Sock& client, char* request);
-    bool processCommand(Sock& client, char* request);    
-};
-
-
-bool State::sendInfo(Sock& client, char* request){
-    // TODO:
-}
-
-
-// commands can be of different types  all of them are encoded in JSON
-bool State::processCommand(Sock& client, char* request){
-    // TODO:
-}
 
 
 int main(int argc, char* argv[]){
