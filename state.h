@@ -15,6 +15,15 @@ struct Service {
 };
 
 
+struct Message {
+    std::string time;
+    std::string msg;
+    unsigned char from[32];
+//    unsigned char signature[64];
+    bool read;
+};
+
+
 // permanent groups: INVITES, BANNED and FRIENDS
 enum CMD {      // types of commands in HTTP request
     INVITE,     // invitation to become a friend or join a group
@@ -34,7 +43,9 @@ enum CMD {      // types of commands in HTTP request
 
 
 class State {
-    bool msgFrom(const std::string& key, const std::string& msg, const std::string& signature);
+    std::vector<Message> newMessages;
+    std::vector<Message> messages;
+    bool msgFrom(const std::string& key, const std::string& time, const std::string& msg, const std::string& signature);
     bool msgTo(const std::string& key, const std::string& msg);
 public:
     std::vector<Service> peers;

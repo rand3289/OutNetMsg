@@ -11,13 +11,22 @@ void writeStatus(Sock& conn, int status, const string& reason); // in webs.cpp
 
 bool State::sendInfo(Sock& client, char* request){
     // TODO:
+    // send newMessages and move them to messages
+    std::copy(make_move_iterator(begin(newMessages)), make_move_iterator(end(newMessages)), back_inserter(messages));
+    newMessages.clear();
+    return true;
 }
 
 
 // receive a message from user
-bool State::msgFrom(const string& key, const string& msg, const string& signature){
-
-// TODO: send message to OutNetTray
+bool State::msgFrom(const string& key, const string& time, const string& msg, const string& signature){
+    // TODO: check key against blacklist??? or should filtering be done on IP level?
+    // TODO: verify signature
+    // TODO: timestamp as int?
+    unsigned char binKey[32];
+//    newMessages.emplace_back(time, msg, binKey, false);
+    // TODO: send message to OutNetTray
+    return true;
 }
 
 
@@ -28,14 +37,17 @@ bool State::msgTo(const string& key, const string& msg){
         if( 0==memcmp(peer.key, binkey, sizeof(binkey) ) ){
             json msg;
             msg["from"] = ""; // TODO: get my key
+            msg["time"] = ""; // TODO: add timestamp
             msg["msg"] = msg;
             msg["signature"] = ""; // TODO: sign msg
             string m = msg.dump();
             Sock conn;
             conn.connect(peer.ip, peer.port);
             conn.write( m.c_str(), m.length() );
+            // TODO: if connection/write fails, put it in a retransmitt queue
         }
     }
+    return true;
 }
 
 
@@ -57,7 +69,7 @@ bool State::processCommand(Sock& client, char* request){
 //            invite(cmd["key"], cmd["msg"]); // msg is a friend word
             break;
         case CMD::MSG:        // someone is sending you a message
-            msgFrom(cmd["key"], cmd["msg"], cmd["signature"]);
+            msgFrom(cmd["key"], cmd["time"], cmd["msg"], cmd["signature"]);
             break;
         case CMD::MSG_USER:    // you are sending a message to someone
             msgTo(cmd["key"], cmd["msg"]);
@@ -73,4 +85,5 @@ bool State::processCommand(Sock& client, char* request){
         case CMD::GRP_RM:     // removing a user from a group/list
             break;
     }
+    return true;
 }
