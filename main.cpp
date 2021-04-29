@@ -90,9 +90,12 @@ int main(int argc, char* argv[]){
     cout << "Running server on port " << port << endl;
     cout << "Registering server with OutNet" << endl;
 
-    State state;
     OutNet outnet(config.outIP, config.outPort);
     outnet.registerService();
+
+    State state;
+    state.loadGroups();
+    state.loadMessages();
 
     system_clock::time_point last = system_clock::now();
     char buff[2048];
