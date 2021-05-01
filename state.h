@@ -8,6 +8,14 @@
 
 static constexpr int KEY_SIZE = 32;
 
+/*
+struct Contact{
+    std::string key;     // public key of a user
+    std::string name;    // just like a key, nick is set by the user of the key
+    std::string comment; // comments are set by you and are never shared with other users
+    int level;      // 0 are your best friends (notify any time)
+};
+*/
 
 struct Service {
     uint32_t ip;
@@ -25,7 +33,7 @@ struct Message {
     unsigned char from[KEY_SIZE];
 //    unsigned char signature[64];
     bool read;
-    bool incoming; // or outgoing???
+    bool incoming; // or outgoing???  // TODO: is this needed???
 };
 
 
@@ -39,7 +47,7 @@ class State {
     bool msgGrp(const std::string& key, const std::string& msg); // send a message to a group
     bool saveMessages(); // all newMessages are appended to the saved messages file
     bool saveGroups();   // when groups are created/deleted/updated they need to be saved to disk
-// TODO: permanent groups: INVITES, BANNED and FRIENDS
+// TODO: permanent groups: BANNED, FRIENDS and INVITES (invitation to be a friend [knows your friend word???] )
 public:
     std::vector<Service> peers;
     std::vector<std::string> services; // local
