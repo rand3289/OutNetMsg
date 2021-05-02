@@ -1,12 +1,24 @@
 #include "state.h"
 #include "sock.h"
-#include <cstring> // memcmp()
-#include <string>
+#include <sstream>
 #include <iostream>
+#include <string>
+#include <cstring>        // memcmp()
 #include "json.hpp"       // lib dir
 using namespace nlohmann; // json.hpp
 using namespace std;
 void writeStatus(Sock& conn, int status, const string& reason); // in webs.cpp
+
+
+bool Key::fromString(const char* str){
+    // TODO: 
+    return true;
+}
+
+
+// TODO: add permanent groups: BANNED, FRIENDS and INVITES (invitation to be a friend [knows your friend word???] )
+State::State(std::string& friendWord): pass(friendWord) {
+}
 
 
 enum INFO {   // types of info requested by GUI - used by sendInfo()
@@ -18,19 +30,55 @@ enum INFO {   // types of info requested by GUI - used by sendInfo()
 
 
 bool State::sendInfo(Sock& client, char* request){
-    int requestType = strtol(request, 0, 10); // 10=decimal.  request format: /info?2
+    int requestType = strtol(request, 0, 10); // 10=decimal.  request format: /?info=2
+//    cout << "Request type " << requestType << endl;
+    stringstream ss;
+    ss << "HTTP/1.1 200 OK" << endl << "Content-type: application/json" << endl << "Content-length: ";
     switch(requestType){
-        case INFO::msgNew: // send newMessages and move them to messages
-            // TODO: send
-            for(auto& msg: newMessages){
+        case INFO::msgNew: { // send newMessages and move them to messages
 
+// DEBUGGING:
+    string msg = "{\"key\": \"FFFF\",\"time\": \"YYMMDDhhmmss\",\"msg\": \"test msg\"},";
+    newMessages.push_back(msg);
+    newMessages.push_back(msg);
+    newMessages.push_back(msg);
+
+            unsigned long len = 4; // [{}]
+            for(auto& msg: newMessages){
+                len+= msg.length();
             }
+
+            ss << len << endl << endl << "[";
+            client.write(ss.str().c_str(), ss.str().length() );
+
+            for(auto& msg: newMessages){
+                client.write(msg.c_str(), msg.length() );
+            }
+            client.write("{}]", 3); // make an empty object at the end to take care of the last comma
             saveMessages();
-            break;
-        case INFO::msgUser:
-            // TODO: scan user key from request and get ALL messages for that key
-            // sort by time and send newest first
-            break;
+            break; }
+        case INFO::msgUser: { // scan user key from request and get ALL messages for that key
+            unsigned long len = 4; // [{}]
+            Key binKey;
+            binKey.fromString(request+5);// skip "&key="
+            auto msgs = messages.find(binKey);
+            if(msgs != end(messages)){
+                for(auto& msg: msgs->second){
+                    len += msg.length();
+                }
+            }
+
+            ss << len << endl << endl << "[";
+            client.write(ss.str().c_str(), ss.str().length() );
+
+            if(msgs != end(messages)){
+                for(auto& msg: msgs->second){
+                    client.write(msg.c_str(), msg.length() );
+                }
+            }
+
+            client.write("{}]", 3); // make an empty object at the end to take care of the last comma
+            break; }
         case INFO::grpList: // TODO: store this info in *.json files and just send files ???
             // TODO:
             break;
@@ -47,21 +95,25 @@ bool State::sendInfo(Sock& client, char* request){
 
 // receive a message from a user
 bool State::msgFrom(const string& key, const string& time, const string& msg, const string& signature){
-    // TODO: check key against blacklist??? or should filtering be done on IP level?
-    // TODO: verify signature
-    // TODO: timestamp as int?
-    unsigned char binKey[KEY_SIZE];
-//    newMessages.emplace_back(time, msg, binKey, false);
+    // TODO: check key against blacklist or should filtering be done on IP level?
+    // TODO: verify signature over time+msg
     // TODO: send message to OutNetTray
+    Key binKey;
+    binKey.fromString(key);
+    stringstream ss;
+    ss << "{" << "\"key:\"" << key << ",\"time:\"" << time << ",\"msg:\"" << msg << "}";
+    newMessages.push_back(ss.str());
+    messages[binKey].push_back( ss.str() );
     return true;
 }
 
 
 // send message to a user
 bool State::msgTo(const string& key, const string& msg){
-    unsigned char binkey[KEY_SIZE]; // TODO: convert key to binary
+    Key binKey;
+    binKey.fromString(key); // convert key to binary
     for(auto& peer: peers){
-        if( 0==memcmp(peer.second.key, binkey, sizeof(binkey) ) ){
+        if( 0==memcmp(&peer.second.key, binKey.key, sizeof(binKey.key) ) ){
             json msg;
             msg["from"] = ""; // TODO: get my key
             msg["time"] = ""; // TODO: add timestamp
@@ -101,7 +153,7 @@ enum CMD {      // types of commands in HTTP request
 };
 
 
-// commands can be of different types  all of them are encoded in JSON
+// commands can be of different types (see enum CMD) all of them are encoded in JSON
 bool State::processCommand(Sock& client, char* request){
     const char* buff = ""; // TODO: find json in request
     auto cmd = json::parse(buff);
@@ -132,6 +184,7 @@ bool State::processCommand(Sock& client, char* request){
         case CMD::GRP_DELETE: // deleting a group
             break;
         case CMD::GRP_ADD:    // adding a user to a group/list
+            // TODO: if key is added to blacklist, find corresponding IPs in peers and add them to IP blacklist
             break;
         case CMD::GRP_RM:     // removing a user from a group/list
             break;
@@ -143,7 +196,6 @@ bool State::processCommand(Sock& client, char* request){
 bool State::saveMessages(){ // append newMessages to saved messages file
 // TODO: store messages per user (per key) and create one file per key (filename key.msg)
 // group messages need to contain the user and filename is (key-group.msg)
-    std::copy(make_move_iterator(begin(newMessages)), make_move_iterator(end(newMessages)), back_inserter(messages));
     newMessages.clear();
     return true; // TODO:
 }

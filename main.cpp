@@ -44,12 +44,12 @@ int main(int argc, char* argv[]){
     OutNet outnet(config.outIP, config.outPort);
     outnet.registerService();
 
-    State state;
+    State state(config.friendWord);
     state.loadGroups();
     state.loadMessages();
 
     system_clock::time_point last = system_clock::now();
-    char buff[2048];
+    char buff[8*1024];
     cout << "running..." << endl;
 
     while(true){
@@ -57,13 +57,14 @@ int main(int argc, char* argv[]){
         if( server.accept(client) > 0 ){
             uint32_t ip = client.getIP();
             // TODO: check if ip is blacklisted   There is a second blacklist for keys (save keys only)
+            // recreate ip blacklist by using key blacklist and getting IPs from state.peers
             client.setRWtimeout(config.readWriteTimeout); // so I can disconnect slow clients
             int rd = client.readLine(buff, sizeof(buff));
             if(rd <= 0){ continue; }// error reading data? (connection closed/timed out)
             cout << "REQUEST: " << buff << endl;
             if( 0==strncmp(buff,"GET ",4) ){         // HTTP GET query
-                if(0==strncmp(buff+4,"/info?", 6)){  // request for information (JSON)
-                    state.sendInfo(client, buff+10);
+                if(0==strncmp(buff+4,"/?info=", 7)){  // request for information (JSON)
+                    state.sendInfo(client, buff+11);
                 } else {                             // request for a static file
                     sendFile(client, buff+4);
                 }
