@@ -22,6 +22,9 @@ bool State::sendInfo(Sock& client, char* request){
     switch(requestType){
         case INFO::msgNew: // send newMessages and move them to messages
             // TODO: send
+            for(auto& msg: newMessages){
+
+            }
             saveMessages();
             break;
         case INFO::msgUser:
@@ -57,8 +60,8 @@ bool State::msgFrom(const string& key, const string& time, const string& msg, co
 // send message to a user
 bool State::msgTo(const string& key, const string& msg){
     unsigned char binkey[KEY_SIZE]; // TODO: convert key to binary
-    for(Service& peer: peers){
-        if( 0==memcmp(peer.key, binkey, sizeof(binkey) ) ){
+    for(auto& peer: peers){
+        if( 0==memcmp(peer.second.key, binkey, sizeof(binkey) ) ){
             json msg;
             msg["from"] = ""; // TODO: get my key
             msg["time"] = ""; // TODO: add timestamp
@@ -66,7 +69,7 @@ bool State::msgTo(const string& key, const string& msg){
             msg["signature"] = ""; // TODO: sign msg
             string m = msg.dump();
             Sock conn;
-            conn.connect(peer.ip, peer.port);
+            conn.connect(peer.second.ip, peer.second.port);
             conn.write( m.c_str(), m.length() );
             // TODO: if connection/write fails, put it in a retransmitt queue
         }
@@ -157,5 +160,15 @@ bool State::saveGroups(){ // when groups are created/deleted/updated they need t
 
 
 bool State::loadGroups(){
+    return true; // TODO:
+}
+
+
+bool State::addPeers(std::vector<Service>& newPeers){
+    return true; // TODO:
+}
+
+
+bool State::addServices(std::vector<std::string>& newServices){
     return true; // TODO:
 }
