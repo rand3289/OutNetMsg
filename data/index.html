@@ -4,15 +4,16 @@
         <script src="onmsg.js"></script>
     </head>
     <body onload="outNetMsgLoaded()">
-        <table width=100% height=100%>
-            <tr height=1%>
-                <td>
-                    <button type="button" onclick="chatClicked()">CHAT</button>              <!-- for chatting with users / groups-->
-                    <button type="button" onclick="requestClicked()">REQUESTS</button>       <!-- friend requests -->
-                    <button type="button" onclick="groupsClicked()">GROUPS</button>          <!-- for adding users to groups -->
-                    <button type="button" onclick="findUserClicked()">FIND USER</button>     <!-- for adding new users -->
-                    <button type="button" onclick="textSearchClicked()">TEXT SEARCH</button> <!-- for adding new users -->
-                    <button type="button" onclick="settingsClicked()">SETTINGS</button>      <!--  -->
+
+        <table width=100% height=5%>
+            <tr>
+                <td align="left">
+                    <button type="button" onclick="chatClicked()">CHAT</button>         <!-- for chatting with users / groups-->
+                    <button type="button" onclick="requestClicked()">REQUESTS</button>  <!-- friend requests -->
+                    <button type="button" onclick="groupsClicked()">GROUPS</button>     <!-- for adding users to groups -->
+                    <button type="button" onclick="findUserClicked()">USERS</button>    <!-- for adding new users -->
+                    <button type="button" onclick="textSearchClicked()">SEARCH</button> <!-- for adding new users -->
+                    <button type="button" onclick="settingsClicked()">SETTINGS</button> <!--  -->
                 </td>
                 <td align="right">
                     <img src = "favicon.ico"> &nbsp;
@@ -20,14 +21,18 @@
                     <a href="https://github.com/rand3289/OutNet">OutNet</a>
                 </td>
             </tr>
+        </table>
+
+        <table width=100% height=95%>
             <tr>
                 <td align="left" valign="top" style="background-color:#C0FFC0" width=50%>
-                    <div id="left"></div>
+                    <div id="left" class="overflow-y:scroll;"></div>
                 </td>
                 <td align="left" valign="top" style="background-color:#C0C0FF" width=50%>
-                    <div id="right"></div>
+                    <div id="right" class="overflow-y:scroll;"></div>
                 </td>
             </tr>
         </table>
+
     </body>
 </html>
