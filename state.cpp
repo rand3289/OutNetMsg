@@ -35,7 +35,7 @@ bool State::sendInfo(Sock& client, char* request){
     stringstream ss;
     ss << "HTTP/1.1 200 OK" << endl << "Content-type: application/json" << endl << "Content-length: ";
     switch(requestType){
-        case INFO::msgNew: { // send newMessages and move them to messages
+        case INFO::msgNew: { // send newMessages
 
 // DEBUGGING:
     string msg = "{\"key\": \"FFFF\",\"time\": \"YYMMDDhhmmss\",\"msg\": \"test msg\"},";
@@ -157,21 +157,6 @@ enum CMD {      // types of commands in HTTP request
 // commands can be of different types (see enum CMD) all of them are encoded in JSON
 bool State::processCommand(Sock& client, char* request){
     char data[8*1024];
-/*    char* buff = &data[0];
-    int rd = 0;
-    while( (rd=client.read(buff, sizeof(data)-(buff-data) ) ) ) {
-        for(int i = 0; i < rd; ++i){ cout << buff[i]; cout.flush(); }
-        buff += rd;
-    }
-
-    char* buff2 = strstr(data, "\r\n");
-    if( !buff2 ){
-        cout << "ERROR: HTTP request did not have a header separator." << endl;
-        writeStatus(client, 400, "Bad Request");
-        return false;
-    }
-    buff2+=2; // skip \r\n
-*/
     int csize = 0;
     while( client.readLine(data,sizeof(data) ) ) {
         if( 0 == strncmp(data, "Content-Length:", 15) ) {
