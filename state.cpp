@@ -112,6 +112,7 @@ bool State::msgFrom(const string& key, const string& time, const string& msg, co
 bool State::msgTo(const string& key, const string& msg){
     Key binKey;
     binKey.fromString(key); // convert key to binary
+    cout << "Sending MSG: " << msg << " TO: " << key << endl;
     for(auto& peer: peers){
         if( 0==memcmp(&peer.second.key, binKey.key, sizeof(binKey.key) ) ){
             json msg;
@@ -155,9 +156,44 @@ enum CMD {      // types of commands in HTTP request
 
 // commands can be of different types (see enum CMD) all of them are encoded in JSON
 bool State::processCommand(Sock& client, char* request){
-    const char* buff = ""; // TODO: find json in request
-    auto cmd = json::parse(buff);
-    int type = cmd["type"];
+    char data[8*1024];
+/*    char* buff = &data[0];
+    int rd = 0;
+    while( (rd=client.read(buff, sizeof(data)-(buff-data) ) ) ) {
+        for(int i = 0; i < rd; ++i){ cout << buff[i]; cout.flush(); }
+        buff += rd;
+    }
+
+    char* buff2 = strstr(data, "\r\n");
+    if( !buff2 ){
+        cout << "ERROR: HTTP request did not have a header separator." << endl;
+        writeStatus(client, 400, "Bad Request");
+        return false;
+    }
+    buff2+=2; // skip \r\n
+*/
+    int csize = 0;
+    while( client.readLine(data,sizeof(data) ) ) {
+        if( 0 == strncmp(data, "Content-Length:", 15) ) {
+            csize = strtol(data+16, 0, 10); // 10 = base 10
+        } else if ( 0 == strlen(data) ) { break; } // empty line - end of header
+    }
+    if( csize != client.read(data, csize) ){
+        cerr << "ERROR reading JSON" << endl;
+        return false;
+    }
+    data[csize] = 0; // null terminate the JSON string
+
+    cout << "JSON: " << data << endl;
+    json cmd;
+    try {
+        cmd = json::parse(data); // buff2
+    } catch (...) {
+        cout << "ERROR: God damn that shit did not parse!" << endl;
+        writeStatus(client, 400, "Bad Request");
+        return false;
+    }
+    int type = cmd["type"].get<int>();
 
     // TODO: implement authentication.  For now, this is our security model :) LOL
     uint32_t ip = client.getIP();
@@ -166,18 +202,19 @@ bool State::processCommand(Sock& client, char* request){
         writeStatus(client, 403, "DENIED");
     }
 
+    cout << "POST request type: " << type << endl;
     switch(type){
         case CMD::INVITE:     // invitation to become a friend
 //            invite(cmd["key"], cmd["msg"]); // msg is a friend word
             break;
         case CMD::MSG:        // someone is sending you a message
-            msgFrom(cmd["key"], cmd["time"], cmd["msg"], cmd["signature"]);
+            msgFrom( cmd["key"].get<string>(), cmd["time"].get<string>(), cmd["msg"].get<string>(), cmd["signature"].get<string>() );
             break;
         case CMD::MSG_USER:    // you are sending a message to someone
-            msgTo(cmd["key"], cmd["msg"]);
+            msgTo( cmd["key"].get<string>(), cmd["msg"].get<string>() );
             break;
         case CMD::MSG_GROUP:
-            msgGrp(cmd["group"], cmd["msg"]);
+            msgGrp( cmd["group"].get<string>(), cmd["msg"].get<string>() );
             break;
         case CMD::GRP_CREATE: // creating a new group/list
             break;
@@ -189,6 +226,8 @@ bool State::processCommand(Sock& client, char* request){
         case CMD::GRP_RM:     // removing a user from a group/list
             break;
     }
+
+    writeStatus(client, 200, "OK");
     return true;
 }
 
