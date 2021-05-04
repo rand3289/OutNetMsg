@@ -60,7 +60,7 @@ bool sendFile(Sock& conn, char* request){
     string mime = getMime(ext);
 
     ifstream f(fullPath, ios::binary);
-    if(!f){ 
+    if( !f || ! fs::is_regular_file(fullPath) ){ // damn ifstream does not tell you if it's a directory
         writeStatus(conn, 404, "NOT FOUND");
         return false;
     }

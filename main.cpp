@@ -63,7 +63,7 @@ int main(int argc, char* argv[]){
             if(rd <= 0){ continue; }// error reading data? (connection closed/timed out)
             cout << "REQUEST: " << buff << endl;
             if( 0==strncmp(buff,"GET ",4) ){         // HTTP GET query
-                if(0==strncmp(buff+4,"/?info=", 7)){  // request for information (JSON)
+                if(0==strncmp(buff+4,"/?info=", 7)){ // request for information (JSON)
                     state.sendInfo(client, buff+11);
                 } else {                             // request for a static file
                     sendFile(client, buff+4);
