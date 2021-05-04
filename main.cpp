@@ -71,7 +71,7 @@ int main(int argc, char* argv[]){
             } else if(0==strncmp(buff, "POST ",5) ){ // HTTP POST - this is a command or a message
                 state.processCommand(client, buff+5);
             }
-//            this_thread::sleep_for(seconds(2));
+            this_thread::sleep_for(seconds(1)); // otherwise winblows freaks out
         }
         auto now = system_clock::now();
         auto delta = now - last;
