@@ -56,7 +56,7 @@ bool sendFile(Sock& conn, char* request){
     string fullPath = "./data"; // TODO: do not allow directories or sanitize path
     fullPath += file;
 
-    string ext = fs::path(file).extension();
+    string ext = fs::path(file).extension().string();
     string mime = getMime(ext);
 
     ifstream f(fullPath, ios::binary);

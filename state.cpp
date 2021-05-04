@@ -139,7 +139,7 @@ bool State::msgGrp(const string& key, const string& msg){
 
 enum CMD {      // types of commands in HTTP request
     INVITE,     // invitation to become a friend or join a group
-    MSG,        // direct or group message
+    MSG_IN,     // direct or group message
     GRP_LEAVE,  // group leave request
 
 // these are GUI commands
@@ -182,7 +182,7 @@ bool State::processCommand(Sock& client, char* request){
 
     // TODO: implement authentication.  For now, this is our security model :) LOL
     uint32_t ip = client.getIP();
-    if(type != CMD::INVITE && type!= CMD::MSG && Sock::isRoutable(ip) ){
+    if(type != CMD::INVITE && type!= CMD::MSG_IN && Sock::isRoutable(ip) ){
         cout << "Denying request of type " << type << " from " << Sock::ipToString(ip) << endl;
         writeStatus(client, 403, "DENIED");
     }
@@ -192,7 +192,7 @@ bool State::processCommand(Sock& client, char* request){
         case CMD::INVITE:     // invitation to become a friend
 //            invite(cmd["key"], cmd["msg"]); // msg is a friend word
             break;
-        case CMD::MSG:        // someone is sending you a message
+        case CMD::MSG_IN:     // someone is sending you a message
             msgFrom( cmd["key"].get<string>(), cmd["time"].get<string>(), cmd["msg"].get<string>(), cmd["signature"].get<string>() );
             break;
         case CMD::MSG_USER:    // you are sending a message to someone
