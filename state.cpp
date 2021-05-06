@@ -17,7 +17,7 @@ bool Key::fromString(const char* str){
 
 
 // TODO: add permanent groups: BANNED, FRIENDS and INVITES (invitation to be a friend [knows your friend word???] )
-State::State(std::string& friendWord): pass(friendWord) {
+State::State() {
 }
 
 
@@ -170,15 +170,16 @@ bool State::processCommand(Sock& client, char* request){
     data[csize] = 0; // null terminate the JSON string
 
     cout << "JSON: " << data << endl;
+    int type = 0;
     json cmd;
     try {
         cmd = json::parse(data); // buff2
+        type = cmd["type"].get<int>();
     } catch (...) {
         cout << "ERROR: God damn that shit did not parse!" << endl;
         writeStatus(client, 400, "Bad Request");
         return false;
     }
-    int type = cmd["type"].get<int>();
 
     // TODO: implement authentication.  For now, this is our security model :) LOL
     uint32_t ip = client.getIP();

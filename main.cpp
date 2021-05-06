@@ -39,12 +39,12 @@ int main(int argc, char* argv[]){
     }
 
     cout << "Running server on port " << port << endl;
-    cout << "Registering server with OutNet" << endl;
+    cout << "Registering server with OutNet " << Sock::ipToString(config.outIP) << ":" << config.outPort << endl;
 
     OutNet outnet(config.outIP, config.outPort);
     outnet.registerService();
 
-    State state(config.friendWord);
+    State state;
     state.loadGroups();
     state.loadMessages();
 

@@ -1,6 +1,6 @@
 #include "sock.h"
+#include "utils.h"
 #include <map>
-#include <cstring> // strlen()
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -8,29 +8,6 @@
 #include <filesystem>
 using namespace std;
 namespace fs=std::filesystem;
-
-
-string& ltrim(string& s){ // trim white spaces on the left
-    auto ends = find_if(begin(s), end(s), [](char ch){ return !isspace(ch); }  );
-    s.erase(begin(s), ends );
-    return s;
-}
-
-
-string& rtrim(string& s){ // trim white spaces on the right
-    auto start = find_if(rbegin(s), rend(s), [](char ch){ return !isspace(ch); } );
-    s.erase( start.base(), end(s) );
-    return s;
-}
-
-
-char* findReverse(char* haystack, char* needle){
-    for(char* end = haystack+strlen(haystack)-strlen(needle); end >= haystack; --end) {
-        if( 0==strcmp(end,needle) ){ return end; }
-    }
-    return nullptr;
-}
-/******************************* end utility functions *****************************/
 
 
 string& getMime(const string& extension);

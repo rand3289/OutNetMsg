@@ -7,37 +7,15 @@
 #include <cstring> // memcmp()
 
 
-static constexpr int KEY_SIZE = 32;
-
 struct Key {
+    static constexpr int KEY_SIZE = 32;
     unsigned char key[KEY_SIZE];
     bool operator<(const Key& rhs) const { return memcmp( rhs.key, key, sizeof(key)) > 0; }
     bool less(const Key& rhs) const { return memcmp( rhs.key, key, sizeof(key)) > 0; }
     Key& operator=(const Key& rhs) { memcpy(key, rhs.key, sizeof(key)); return *this; }
-//    Key& operator=(const Key&& rhs) { memcpy(key, rhs.key, sizeof(key)); return *this; }
     bool fromString(const char* str); // scan key from a hex "string"
     bool fromString(const std::string& str){ return fromString( str.c_str() ); }
 };
-
-
-/*
-struct Message {
-    std::string time;
-    std::string msg;
-    Key from;
-    bool read;
-//    unsigned char signature[64];
-//    bool incoming; // or outgoing???  // TODO: is this needed???
-};
-*/
-/*
-struct Contact{
-    std::string key;     // public key of a user
-    std::string name;    // just like a key, nick is set by the user of the key
-    std::string comment; // comments are set by you and are never shared with other users
-    int level;      // 0 are your best friends (notify any time)
-};
-*/
 
 
 struct Service {
@@ -65,7 +43,7 @@ class State {
     bool saveMessages(); // all newMessages are appended to the saved messages file
     bool saveGroups();   // when groups are created/deleted/updated they need to be saved to disk
 public:
-    State(std::string& friendWord);
+    State();
     bool addPeers(std::vector<Service>& newPeers);
     bool addServices(std::vector<std::string>& newServices);
     bool sendInfo(Sock& client, char* request);
