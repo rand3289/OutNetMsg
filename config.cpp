@@ -14,7 +14,7 @@ const string configName = "onmsg.cfg";
 bool Config::load(){
     ifstream config (configName);
     if( !config ){
-        cout << configName << " not found. Setting configuration data to defaults.  ";
+        cout << configName << " not found. Setting configuration data to defaults." << endl;
     } else { // config file exists
         vector<string> lines;
         parseLines(config, lines);
@@ -62,19 +62,16 @@ bool Config::save(){
     cout << "Saving configuration data to disk." << endl;
     ofstream config(configName);
 
-    string msg1 = "# Configuration file for OutNetMsg service https://github.com/rand3289/OutNetMsg";
-    string msg2 = "# If this file is deleted or corrupted it will be regenerated with default values.";
-    string msg3 = "# RefreshTime and ReadWriteTime are in seconds.";
-    config << msg1 << endl << msg2 << endl << msg3 << endl << endl;
-
-    config << "# OutNetMsg depends on OutNet service.  These settings are related to your local OutNet service:" << endl;
-    config << "OutNetIP="   << outIP << "\t# IP address of your local OutNet service" <<  endl;
+    config << "# Configuration file for OutNetMsg service https://github.com/rand3289/OutNetMsg" << endl;
+    config << "# If this file is deleted or corrupted it will be regenerated with default values." << endl;
+    config << endl;
+    config << "# OutNetMsg depends on OutNet service.  These settings are for your local OutNet service:" << endl;
+    config << "OutNetIP="   << Sock::ipToString(outIP) << "\t# IP address of your local OutNet service" <<  endl;
     config << "OutNetPort="   << outPort << "\t# port number of your local OutNet service" <<  endl;
-    config << "RefreshTime="  << refreshTime << "\t# how often to refresh peer data from OutNet service" << endl;
+    config << "RefreshTime="  << refreshTime << "\t# how often to refresh peer data from OutNet service (seconds)" << endl;
     config << endl;
     config << "ServerPort="  << serverPort << "\t# port number you want OutNetMsg to run on" <<  endl;
-    config << "ReadWriteTimeout=" << readWriteTimeout << "\t# OutNetMsg server port read/write timeouts" << endl;
-    config << endl;
+    config << "ReadWriteTimeout=" << readWriteTimeout << "\t# OutNetMsg server port read/write timeouts (seconds)" << endl;
 
-    return true;
+    return config.good();
 }

@@ -87,6 +87,7 @@ bool State::sendInfo(Sock& client, char* request){
             break;
         default: 
             cerr << "WARNING: unknown request type from client: " << requestType << endl;
+            writeStatus(client, 400, "Bad Request");
             break;
     }
     return true;

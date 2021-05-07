@@ -11,7 +11,7 @@ using namespace std;
 #include <chrono>
 using namespace std::chrono;
 bool sendFile(Sock& conn, char* request); // in webs.cpp
-// TODO: create "LITE" client which does not perform signature verification
+// TODO: create "LITE" OutNet client which does not perform signature verification
 // TODO: allow clients to sign the service registration request
 // TODO: search messages for keywords
 
@@ -28,7 +28,9 @@ int main(int argc, char* argv[]){
     initNetwork(); //
 
     Config config;
-    config.load(); // TODO: failed?
+    if( !config.load() ){ // can not run without OutNet IP:PORT
+        return 1;
+    }
 
     Sock server;
     server.listen(config.serverPort);
