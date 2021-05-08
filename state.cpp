@@ -16,125 +16,13 @@ bool Key::fromString(const char* str){
 }
 
 
+std::string Key::toString() const {
+    return string(); // TODO:
+}
+
+
 // TODO: add permanent groups: BANNED, FRIENDS and INVITES (invitation to be a friend [knows your friend word???] )
 State::State() {
-}
-
-
-enum INFO {   // types of info requested by GUI - used by sendInfo()
-    msgNew=0, // get ALL new messages
-    msgUser,  // get ALL messages for a user
-    grpList,  // get a list of groups
-    grpUsers, // get a list of users in a group
-};
-
-
-bool State::sendInfo(Sock& client, char* request){
-    int requestType = strtol(request, 0, 10); // 10=decimal.  request format: /?info=2
-//    cout << "Request type " << requestType << endl;
-    stringstream ss;
-    ss << "HTTP/1.1 200 OK" << endl << "Content-type: application/json" << endl << "Content-length: ";
-    switch(requestType){
-        case INFO::msgNew: { // send newMessages
-
-// DEBUGGING:
-    string msg = "{\"key\": \"FFFF\",\"time\": \"YYMMDDhhmmss\",\"msg\": \"test msg\"},";
-    newMessages.push_back(msg);
-    newMessages.push_back(msg);
-    newMessages.push_back(msg);
-
-            unsigned long len = 4; // [{}]
-            for(auto& msg: newMessages){
-                len+= msg.length();
-            }
-
-            ss << len << endl << endl << "[";
-            client.write(ss.str().c_str(), ss.str().length() );
-
-            for(auto& msg: newMessages){
-                client.write(msg.c_str(), msg.length() );
-            }
-            client.write("{}]", 3); // make an empty object at the end to take care of the last comma
-            saveMessages();
-            break; }
-        case INFO::msgUser: { // scan user key from request and get ALL messages for that key
-            unsigned long len = 4; // [{}]
-            Key binKey;
-            binKey.fromString(request+5);// skip "&key="
-            auto msgs = messages.find(binKey);
-            if(msgs != end(messages)){
-                for(auto& msg: msgs->second){
-                    len += msg.length();
-                }
-            }
-
-            ss << len << endl << endl << "[";
-            client.write(ss.str().c_str(), ss.str().length() );
-
-            if(msgs != end(messages)){
-                for(auto& msg: msgs->second){
-                    client.write(msg.c_str(), msg.length() );
-                }
-            }
-
-            client.write("{}]", 3); // make an empty object at the end to take care of the last comma
-            break; }
-        case INFO::grpList: // TODO: store this info in *.json files and just send files ???
-            // TODO:
-            break;
-        case INFO::grpUsers:
-            // TODO:
-            break;
-        default: 
-            cerr << "WARNING: unknown request type from client: " << requestType << endl;
-            writeStatus(client, 400, "Bad Request");
-            break;
-    }
-    return true;
-}
-
-
-// receive a message from a user
-bool State::msgFrom(const string& key, const string& time, const string& msg, const string& signature){
-    // TODO: check key against blacklist or should filtering be done on IP level?
-    // TODO: verify signature over time+msg
-    // TODO: send message to OutNetTray
-    Key binKey;
-    binKey.fromString(key);
-    stringstream ss;
-    ss << "{" << "\"key:\"" << key << ",\"time:\"" << time << ",\"msg:\"" << msg << "}";
-    newMessages.push_back(ss.str());
-    messages[binKey].push_back( ss.str() );
-    return true;
-}
-
-
-// send message to a user
-bool State::msgTo(const string& key, const string& msg){
-    Key binKey;
-    binKey.fromString(key); // convert key to binary
-    cout << "Sending MSG: " << msg << " TO: " << key << endl;
-    for(auto& peer: peers){
-        if( 0==memcmp(&peer.second.key, binKey.key, sizeof(binKey.key) ) ){
-            json msg;
-            msg["from"] = ""; // TODO: get my key
-            msg["time"] = ""; // TODO: add timestamp
-            msg["msg"] = msg;
-            msg["signature"] = ""; // TODO: sign msg
-            string m = msg.dump();
-            Sock conn;
-            conn.connect(peer.second.ip, peer.second.port);
-            conn.write( m.c_str(), m.length() );
-            // TODO: if connection/write fails, put it in a retransmitt queue
-        }
-    }
-    return true;
-}
-
-
-// send message to a group
-bool State::msgGrp(const string& key, const string& msg){
-    return true; // TODO:
 }
 
 
@@ -153,6 +41,155 @@ enum CMD {      // types of commands in HTTP request
     GRP_ADD,    // adding a user to a group/list
     GRP_RM,     // removing a user from a group/list
 };
+
+
+enum INFO {   // types of info requested by GUI - used by sendInfo()
+    msgNew=0, // get ALL new messages
+    msgUser,  // get ALL messages for a user
+    grpList,  // get a list of groups
+    grpUsers, // get a list of users in a group
+};
+
+
+bool State::sendInfo(Sock& client, char* request){
+// DEBUGGING:
+    string msg = "{\"key\": \"FFFF\",\"time\": \"YYMMDDhhmmss\",\"msg\": \"test msg\"},";
+    newMessages.push_back(msg);
+
+    stringstream ss, data;
+    ss << "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: ";
+    int requestType = strtol(request, 0, 10); // 10=decimal.  request format: /?info=2
+//    cout << "Request type " << requestType << endl;
+    switch(requestType){
+        case INFO::msgNew: { // send newMessages
+            data << "[";     // JSON array
+            for(unsigned int i=0; i < newMessages.size(); ++i){
+                if(i>0){ data << ","; } // separate messages within the array with a coma
+                data << newMessages[i];
+            }
+            data << "]";
+
+            ss << data.str().length() << "\r\n\r\n";
+            client.write(ss.str().c_str(), ss.str().length() );     // HTTP header
+            client.write(data.str().c_str(), data.str().length() ); // JSON data
+            saveMessages();
+            break; 
+        }
+        case INFO::msgUser: { // scan user key from request and get ALL messages for that key
+            data << "["; // JSON array
+            Key binKey;
+            binKey.fromString(request+5);// skip "&key="
+            auto msgs = messages.find(binKey);
+            if(msgs != end(messages)){
+                for(unsigned int i=0; i < msgs->second.size(); ++i){
+                    if(i>0){ data << ","; }
+                    data << msgs->second[i];
+                }
+            }
+            data << "]"; // close JSON array
+
+            ss << data.str().length() << "\r\n\r\n";
+            client.write(ss.str().c_str(), ss.str().length() );
+            client.write(data.str().c_str(), data.str().length() );
+            break;
+        }
+        case INFO::grpList: // TODO: store this info in *.json files and just send files ???
+            // TODO: send a list of groups  as well as a list of users with their names
+            break;
+        case INFO::grpUsers:
+            // TODO: send a list of public keys in a group
+            break;
+        default: 
+            cerr << "WARNING: unknown request type from client: " << requestType << endl;
+            writeStatus(client, 400, "Bad Request");
+            break;
+    }
+    return true;
+}
+
+
+// receive a message from a user
+bool State::msgFrom(const string& key, const string& time, const string& msg, const string& signature){
+    // TODO: check key against blacklist besides filtering done on IP level.
+    // TODO: verify signature over array of msg
+    // TODO: send message to OutNetTray
+
+// "{ type: " << CMD::MSG_IN << ",key: \"" << myKey << "\", sign: \"" << signature << "\", msgs: [" << data.str() << "]}";
+
+    Key binKey;
+    binKey.fromString(key);
+    // TODO: for each msg in msgs:
+    stringstream ss;
+    ss << "{key: \"" << key << "\", message: " << msg << "}";
+    newMessages.push_back(ss.str());
+    messages[binKey].push_back( msg );
+    return true;
+}
+
+
+// send message to a user
+bool State::msgTo(const string& key, const string& msg){
+    cout << "Sending MSG: " << msg << " TO: " << key << endl;
+    json jmsg;
+    jmsg["time"] = ""; // TODO: add timestamp
+    jmsg["msg"] = msg;
+// TODO: add group="" to individual jmsg???
+
+    string m = jmsg.dump();
+    Key binKey;
+    binKey.fromString(key); // convert key to binary
+    outMessages[binKey].push_back(m);
+
+// TODO: break this into sendMessages():
+    for(auto km: outMessages){            // key-messages pair
+        const Key& pk = km.first;         // message receiver's key
+        vector<string>& msgs = km.second; // vector of messages for that user
+        if( msgs.empty() ){ continue; }   // no messages for that user // TODO: delete this public key from map
+
+        auto inf = peers.find(pk);        // find info for that public key
+        if(inf == peers.end() ){
+            cout << "Peer information for key " << pk.toString() << " not found!" << endl;
+            continue;
+        }
+
+        Sock conn;
+        if ( !conn.connect(inf->second.ip, inf->second.port) ){
+            cerr << "Error connecting to " << inf->second.ip << ":" << inf->second.port << endl;
+            continue;
+        }
+
+        stringstream data; // create JSON array of messages
+        for(unsigned int i=0; i < msgs.size(); ++i){
+            if(i>0){ data << ","; }
+            data << msgs[i];
+        }
+
+        string myKey = "****************************************************************";     // TODO: get my public key
+        string signature = "****************************************************************"; // TODO: sign 'data'
+
+        stringstream ss;  // main JSON payload
+        ss << "{ type: " << CMD::MSG_IN << ",key: \"" << myKey << "\", sign: \"" << signature << "\", msgs: [" << data.str() << "]}";
+
+        stringstream head;
+        head << "POST / HTTP/1.1\r\n";
+        head << "Content-Type: application/json\r\n";
+        head << "Content-Length: " << ss.str().length() << "\r\n";
+        head << "\r\n";
+
+        conn.write( head.str().c_str(), head.str().length() );   // write request header
+        if( conn.write( ss.str().c_str(), ss.str().length() ) ){ // write payload (JSON data)
+            msgs.clear();
+        }
+    } // for
+    return true;
+}
+
+
+// send message to a group
+bool State::msgGrp(const string& group, const string& msg){
+    // TODO: for every key in the group msgTo(key, msg, group);
+    return true;
+}
 
 
 // commands can be of different types (see enum CMD) all of them are encoded in JSON
@@ -195,7 +232,7 @@ bool State::processCommand(Sock& client, char* request){
 //            invite(cmd["key"], cmd["msg"]); // msg is a friend word
             break;
         case CMD::MSG_IN:     // someone is sending you a message
-            msgFrom( cmd["key"].get<string>(), cmd["time"].get<string>(), cmd["msg"].get<string>(), cmd["signature"].get<string>() );
+            msgFrom( cmd["key"].get<string>(), cmd["time"].get<string>(), cmd["msgs"].get<string>(), cmd["signature"].get<string>() );
             break;
         case CMD::MSG_USER:    // you are sending a message to someone
             msgTo( cmd["key"].get<string>(), cmd["msg"].get<string>() );
@@ -212,6 +249,10 @@ bool State::processCommand(Sock& client, char* request){
             break;
         case CMD::GRP_RM:     // removing a user from a group/list
             break;
+        default:
+            cerr << "Unknown POST request type: " << type << endl;
+            writeStatus(client, 400, "Bad Request");
+            return false;
     }
 
     writeStatus(client, 200, "OK");

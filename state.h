@@ -13,6 +13,8 @@ struct Key {
     bool operator<(const Key& rhs) const { return memcmp( rhs.key, key, sizeof(key)) > 0; }
     bool less(const Key& rhs) const { return memcmp( rhs.key, key, sizeof(key)) > 0; }
     Key& operator=(const Key& rhs) { memcpy(key, rhs.key, sizeof(key)); return *this; }
+    bool operator==(const Key& rhs) const { return 0==memcmp(key, rhs.key, sizeof(key) ); }
+    std::string toString() const;
     bool fromString(const char* str); // scan key from a hex "string"
     bool fromString(const std::string& str){ return fromString( str.c_str() ); }
 };
