@@ -108,39 +108,47 @@ bool State::sendInfo(Sock& client, char* request){
 }
 
 
-// receive a message from a user
-bool State::msgFrom(const string& key, const string& time, const string& msg, const string& signature){
+// receive a message from a user over HTTP POST
+bool State::msgFrom(const string& key, const string& signature, const vector<string>& msgs){
     // TODO: check key against blacklist besides filtering done on IP level.
     // TODO: verify signature over array of msg
-    // TODO: send message to OutNetTray
-
+    // TODO: send last message to OutNetTray
 // "{ type: " << CMD::MSG_IN << ",key: \"" << myKey << "\", sign: \"" << signature << "\", msgs: [" << data.str() << "]}";
 
     Key binKey;
     binKey.fromString(key);
-    // TODO: for each msg in msgs:
+    
     stringstream ss;
-    ss << "{key: \"" << key << "\", message: " << msg << "}";
-    newMessages.push_back(ss.str());
-    messages[binKey].push_back( msg );
+    for(const string& msg: msgs){ // for each message in msgs
+        ss.clear();
+        ss << "{key: \"" << key << "\", message: " << msg << "}";
+        newMessages.push_back(ss.str());
+        messages[binKey].push_back( msg );
+    }
     return true;
 }
 
 
-// send message to a user
-bool State::msgTo(const string& key, const string& msg){
-    cout << "Sending MSG: " << msg << " TO: " << key << endl;
-    json jmsg;
-    jmsg["time"] = ""; // TODO: add timestamp
-    jmsg["msg"] = msg;
-// TODO: add group="" to individual jmsg???
-
-    string m = jmsg.dump();
+bool State::msgTo(const string& key, const string& msg, const string& group){ // send a message to a user
     Key binKey;
     binKey.fromString(key); // convert key to binary
-    outMessages[binKey].push_back(m);
+    return msgTo(binKey, msg, group);
+}
 
-// TODO: break this into sendMessages():
+
+bool State::msgTo(const Key& key, const string& msg, const string& group){ // send a message to a user
+    cout << "Sending MSG: " << msg << " TO: " << key.toString() << endl;
+    json jmsg;
+    jmsg["time"] = "";  // TODO: add timestamp
+    jmsg["group"] = group;
+    jmsg["msg"] = msg;
+    string m = jmsg.dump();
+    outMessages[key].push_back(m);
+    return true;
+}
+
+
+bool State::sendMessages(){
     for(auto km: outMessages){            // key-messages pair
         const Key& pk = km.first;         // message receiver's key
         vector<string>& msgs = km.second; // vector of messages for that user
@@ -187,7 +195,14 @@ bool State::msgTo(const string& key, const string& msg){
 
 // send message to a group
 bool State::msgGrp(const string& group, const string& msg){
-    // TODO: for every key in the group msgTo(key, msg, group);
+    auto grp = groups.find(group);
+    if( grp == groups.end() ){
+        cerr << "ERROR: Group " << group << " NOT found!" << endl;
+        return false;
+    }
+    for(Key& key: grp->second) { // send message for every key in the group
+        msgTo(key, msg, group);
+    }
     return true;
 }
 
@@ -230,16 +245,24 @@ bool State::processCommand(Sock& client, char* request){
     switch(type){
         case CMD::INVITE:     // invitation to become a friend
 //            invite(cmd["key"], cmd["msg"]); // msg is a friend word
+// TODO: invite contains a list of keys, user and group name
             break;
         case CMD::MSG_IN:     // someone is sending you a message
-            msgFrom( cmd["key"].get<string>(), cmd["time"].get<string>(), cmd["msgs"].get<string>(), cmd["signature"].get<string>() );
+            msgFrom( cmd["key"].get<string>(), cmd["sign"].get<string>(), cmd["msgs"].get<vector<string>>() );
             break;
         case CMD::MSG_USER:    // you are sending a message to someone
-            msgTo( cmd["key"].get<string>(), cmd["msg"].get<string>() );
+            msgTo( cmd["key"].get<string>(), cmd["msg"].get<string>(), "" ); // group is empty
+            sendMessages();
             break;
-        case CMD::MSG_GROUP:
-            msgGrp( cmd["group"].get<string>(), cmd["msg"].get<string>() );
+        case CMD::MSG_GROUP: {
+            bool ok = msgGrp( cmd["group"].get<string>(), cmd["msg"].get<string>() );
+            if(!ok){
+                writeStatus(client, 404, "NOT FOUND"); // group not found (can not post to that group)
+                return false;
+            }
+            sendMessages();
             break;
+        }
         case CMD::GRP_CREATE: // creating a new group/list
             break;
         case CMD::GRP_DELETE: // deleting a group
@@ -259,6 +282,8 @@ bool State::processCommand(Sock& client, char* request){
     return true;
 }
 
+
+/************************************* SAVE / LOAD **********************************************/
 
 bool State::saveMessages(){ // append newMessages to saved messages file
 // TODO: store messages per user (per key) and create one file per key (filename key.msg)
