@@ -108,46 +108,6 @@ bool State::sendInfo(Sock& client, char* request){
 }
 
 
-// receive a message from a user over HTTP POST
-bool State::msgFrom(const string& key, const string& signature, const vector<string>& msgs){
-    // TODO: check key against blacklist besides filtering done on IP level.
-    // TODO: verify signature over array of msg
-    // TODO: send last message to OutNetTray
-// "{ type: " << CMD::MSG_IN << ",key: \"" << myKey << "\", sign: \"" << signature << "\", msgs: [" << data.str() << "]}";
-
-    Key binKey;
-    binKey.fromString(key);
-    
-    stringstream ss;
-    for(const string& msg: msgs){ // for each message in msgs
-        ss.clear();
-        ss << "{key: \"" << key << "\", message: " << msg << "}";
-        newMessages.push_back(ss.str());
-        messages[binKey].push_back( msg );
-    }
-    return true;
-}
-
-
-bool State::msgTo(const string& key, const string& msg, const string& group){ // send a message to a user
-    Key binKey;
-    binKey.fromString(key); // convert key to binary
-    return msgTo(binKey, msg, group);
-}
-
-
-bool State::msgTo(const Key& key, const string& msg, const string& group){ // send a message to a user
-    cout << "Sending MSG: " << msg << " TO: " << key.toString() << endl;
-    json jmsg;
-    jmsg["time"] = "";  // TODO: add timestamp
-    jmsg["group"] = group;
-    jmsg["msg"] = msg;
-    string m = jmsg.dump();
-    outMessages[key].push_back(m);
-    return true;
-}
-
-
 bool State::sendMessages(){
     for(auto km: outMessages){            // key-messages pair
         const Key& pk = km.first;         // message receiver's key
@@ -189,6 +149,46 @@ bool State::sendMessages(){
             msgs.clear();
         }
     } // for
+    return true;
+}
+
+
+// receive a messageS from a user over HTTP POST
+bool State::msgFrom(const string& key, const string& signature, const vector<string>& msgs){
+    // TODO: check key against blacklist besides filtering done on IP level.
+    // TODO: verify signature over array of msg
+// "{ type: " << CMD::MSG_IN << ",key: \"" << myKey << "\", sign: \"" << signature << "\", msgs: [" << data.str() << "]}";
+// msgs contain time, group, msg
+    Key binKey;
+    binKey.fromString(key);
+    
+    stringstream ss;
+    for(const string& msg: msgs){ // for each message in msgs
+        ss.clear();
+        ss << "{key: \"" << key << "\", message: " << msg << "}";
+        newMessages.push_back(ss.str());
+        messages[binKey].push_back( msg );
+    }
+    // TODO: send last message to OutNetTray
+    return true;
+}
+
+
+bool State::msgTo(const string& key, const string& msg, const string& group){ // send a message to a user
+    Key binKey;
+    binKey.fromString(key); // convert key to binary
+    return msgTo(binKey, msg, group);
+}
+
+
+bool State::msgTo(const Key& key, const string& msg, const string& group){ // send a message to a user
+    cout << "Sending MSG: " << msg << " TO: " << key.toString() << endl;
+    json jmsg;
+    jmsg["time"] = "";  // TODO: add timestamp
+    jmsg["group"] = group;
+    jmsg["msg"] = msg;
+    string m = jmsg.dump();
+    outMessages[key].push_back(m);
     return true;
 }
 
