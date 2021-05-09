@@ -44,7 +44,7 @@ int main(int argc, char* argv[]){
     cout << "Registering server with OutNet " << Sock::ipToString(config.outIP) << ":" << config.outPort << endl;
 
     OutNet outnet(config.outIP, config.outPort);
-    outnet.registerService();
+    outnet.registerService(port);
 
     State state;
     state.loadGroups();

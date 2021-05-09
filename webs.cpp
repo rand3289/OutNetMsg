@@ -30,8 +30,8 @@ bool sendFile(Sock& conn, char* request){
 
     string req = request;
     auto file = ltrim(rtrim(req));
-    string fullPath = "./data"; // TODO: do not allow directories or sanitize path
-    fullPath += file;
+    string fullPath = "./msgweb";
+    fullPath += file;           // TODO: do not allow directories or sanitize path
 
     string ext = fs::path(file).extension().string();
     string mime = getMime(ext);

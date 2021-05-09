@@ -15,11 +15,12 @@ OutNet::OutNet(uint32_t outNetIP, uint16_t outNetPort): service(), filters() {
 }
 
 
-bool OutNet::registerService(){ // TODO: add port
-    string servInfo = "http:tcp:outnetmsg:127.0.0.1:2778:/index.html"; // your service description
+bool OutNet::registerService(uint16_t port){
     stringstream ss;
     ss << "GET / HTTP/1.1\r\n";
-    ss << "Register: " << servInfo << "\r\n\r\n";
+    ss << "Register: ";
+    ss << "http:tcp:outnetmsg:127.0.0.1:" << port << ":/index.html"; // your service description
+    ss << "\r\n\r\n";
 
     Sock sock;
     sock.connect(service.host, service.port);

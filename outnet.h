@@ -12,7 +12,7 @@ class OutNet{
     uint32_t sel = SELECT::LSVC |SELECT::IP | SELECT::PORT | SELECT::AGE | SELECT::RKEY | SELECT::ISCHK | SELECT::RSVCF;
 public:
     OutNet(uint32_t outNetIP, uint16_t outNetPort);
-    bool registerService();
+    bool registerService(uint16_t port);
     bool query(std::vector<Service>& peers, std::vector<std::string>& local, int ageSeconds);
 };
 

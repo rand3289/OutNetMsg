@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <cstring>        // memcmp()
+#include <iomanip>        // setw(), setfill()
 #include "json.hpp"       // lib dir
 using namespace nlohmann; // json.hpp
 using namespace std;
@@ -17,7 +18,11 @@ bool Key::fromString(const char* str){
 
 
 std::string Key::toString() const {
-    return string(); // TODO:
+    stringstream ss;
+    for(int i = 0; i< sizeof(key); ++i){
+        ss << std::setw(2) << std::setfill('0') << std::hex << (int) key[i];
+    }
+    return ss.str();
 }
 
 
@@ -132,8 +137,9 @@ bool State::sendMessages(){
             data << msgs[i];
         }
 
-        string myKey = "****************************************************************";     // TODO: get my public key
-        string signature = "****************************************************************"; // TODO: sign 'data'
+// TODO: get my public key.  Sign 'data'
+        string myKey = "****************************************************************";
+        string signature = "****************************************************************";
 
         stringstream ss;  // main JSON payload
         ss << "{ type: " << CMD::MSG_IN << ",key: \"" << myKey << "\", sign: \"" << signature << "\", msgs: [" << data.str() << "]}";
@@ -284,6 +290,8 @@ bool State::processCommand(Sock& client, char* request){
 
 
 /************************************* SAVE / LOAD **********************************************/
+// store everything under ./msgdata
+
 
 bool State::saveMessages(){ // append newMessages to saved messages file
 // TODO: store messages per user (per key) and create one file per key (filename key.msg)
