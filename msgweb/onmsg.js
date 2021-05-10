@@ -76,14 +76,17 @@ function sendMsg(){
     storeData(msg);
 }
 
-function findUser(){
+async function findUser(){
     let list = document.getElementById("UserList");
+    list.innerHTML = "";
+
     let user = document.getElementById("UserKey").value;
-    let data = loadData(4, "&user="+user);
-    if(data.length == 0) {
+    let data = await loadData(4, "&user="+user);
+
+    if(data.keys.length == 0) {
         list.innerHTML = "Not found.";
     }
-    else for(let i=0; i < data.length; ++i) {
-        list.innerHTML += data[i] + "<BR>\r\n";
+    else for(let i=0; i < data.keys.length; ++i) {
+        list.innerHTML += data.keys[i] + "<BR>\r\n";
     }
 }

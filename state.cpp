@@ -117,16 +117,16 @@ bool State::sendInfo(Sock& client, char* request){
             }
             string hexNum = user + strlen("&user=");
 cout << "DEBUG: looking for:" << hexNum << endl;
-            data << "[";
+            data << "{\"keys\": [";
             for(auto& p: peers){
                 string strKey = p.second.key.toString(); // TODO: very slow !!!
 cout << "DEBUG: key: " << strKey << endl;
                 if( string::npos != strKey.find( hexNum) ){
                     if(data.str().length() > 10){ data << ","; } // separate keys
-                    data << strKey;
+                    data << "\"" << strKey << "\"";
                 }
             }
-            data << "]"; // close JSON array
+            data << "]}"; // close JSON array
 
             ss << data.str().length() << "\r\n\r\n";
             client.write(ss.str().c_str(), ss.str().length() );
@@ -346,11 +346,33 @@ bool State::loadGroups(){
 }
 
 
-bool State::addPeers(std::vector<Service>& newPeers){
-    return true; // TODO:
+bool State::addPeers(std::vector<HostInfo>& newPeers){
+    bool foundNew = false;
+    for(HostInfo& peer: newPeers){
+        if(peer.key){
+            Key key;
+            memcpy(key.key, (*peer.key).key, sizeof(key.key) ); // TODO: remove this hack by merging Key->PubKey
+            auto found = peers.find(key);
+            if( found!=peers.end() ){
+                found->second.ip = peer.host;   // update them just incase they've changed
+                found->second.port = peer.port; // easier to update than check if they have changed
+            } else {
+                Service& serv = peers[key];     // insert it
+                serv.ip = peer.host;
+                serv.port = peer.port;
+                serv.key = key;
+                foundNew = true;
+            }
+        }
+    }
+    return foundNew;
 }
 
 
 bool State::addServices(std::vector<std::string>& newServices){
-    return true; // TODO:
+    bool inserted = false;
+    for(string& s: newServices){
+        inserted |= services.insert(s).second;
+    }
+    return inserted;
 }

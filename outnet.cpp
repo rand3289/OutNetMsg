@@ -42,16 +42,17 @@ bool OutNet::registerService(uint16_t port){ // TODO: move to client.cpp ???
 }
 
 
-bool OutNet::query(vector<Service>& services, vector<string>& local, int ageMinutes){
-    service.services.clear(); // TODO: this is a hack, put local services into "local" right away.
-    vector<HostInfo> newData; // results will be returned here
-    stringstream ss;
-    ss << "AGE_LT_" << ageMinutes;
-    filters.push_back( ss.str() );
-    bool ok = queryOutNet(sel, service, newData, 0, 10, &filters);
+bool OutNet::query(vector<HostInfo>& peers, vector<string>& local, int ageMinutes){
+    service.services.clear();
+    string filt = "AGE_LT" + to_string(ageMinutes);
+    filters.push_back( filt );
+
+    bool ok = queryOutNet(select, service, peers, 0, 10, &filters);
     filters.pop_back(); // it can change the next time around
     if( !ok ) { return false; }
-    std::copy( begin(service.services), end(service.services), back_inserter(local) );
+
+    // TODO: this is a hack, put local services into "local" right away.
+    std::copy( begin(service.services), end(service.services), back_inserter(local) ); // TODO: move ???
 
 // TODO: remove DEBUGGING:
     cout << Sock::ipToString(service.host) << ":" << service.port << endl;
@@ -59,7 +60,7 @@ bool OutNet::query(vector<Service>& services, vector<string>& local, int ageMinu
         cout << "\t" << s << endl;
     }
 
-    for(HostInfo& hi: newData){
+    for(HostInfo& hi: peers){
         cout << Sock::ipToString(hi.host) << ":" << hi.port << endl;
         for(string& s: hi.services){
             cout << "\t" << s << endl;

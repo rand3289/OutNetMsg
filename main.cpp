@@ -53,8 +53,7 @@ int main(int argc, char* argv[]){
     state.loadGroups();
     state.loadMessages();
 
-    constexpr static int monthSeconds = 60*60*24*30; // no peers older than a month
-    system_clock::time_point last = system_clock::now() - seconds(monthSeconds);
+    system_clock::time_point last = system_clock::now() - hours(24*30); // a month
     char buff[8*1024];
     cout << "running..." << endl;
 
@@ -63,12 +62,12 @@ int main(int argc, char* argv[]){
         auto delta = now - last;
         auto sec = duration_cast<seconds>(delta).count();
         if( sec > config.refreshTime ){
-            vector<Service> peers;
+            last = now;
+            vector<HostInfo> peers;
             vector<string> services;
             outnet.query(peers, services, sec/60+1); //  pull updates from outnet for the last N minutes
             state.addPeers(peers);
             state.addServices(services);
-            last = now;
         }
 
         Sock client;

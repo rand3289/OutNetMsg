@@ -1,8 +1,10 @@
 #ifndef INCLUDED_STATE_H
 #define INCLUDED_STATE_H
 #include "sock.h"
+#include "client.h"
 #include <vector>
 #include <map>
+#include <set>
 #include <string>
 #include <cstring> // memcmp()
 #include <chrono>
@@ -25,15 +27,15 @@ struct Service {
     uint32_t ip;
     uint16_t port;
     Key key;
-    std::chrono::system_clock::time_point lastSeen;
-    bool keyVerified;
+//    std::chrono::system_clock::time_point lastSeen;
+//    bool keyVerified;
     std::string name; // name set by key owner during INVITE?  // TODO: comment (set by you)
 };
 
 
 class State {
     std::string pass;                                    // friendWord is a password to become your friend
-    std::vector<std::string> services;                   // local services - find OutNetTray here
+    std::set<std::string> services;                      // local services - find OutNetTray here
     std::vector<std::string> newMessages;                // new incoming messages to be sent to the client
     std::map<Key, std::vector<std::string>> messages;    // incoming messages already sent to the client
     std::map<Key, std::vector<std::string>> outMessages; // unsent messages (recepient is offline)
@@ -49,7 +51,7 @@ class State {
     bool saveGroups();   // when groups are created/deleted/updated they need to be saved to disk
 public:
     State();
-    bool addPeers(std::vector<Service>& newPeers);
+    bool addPeers(std::vector<HostInfo>& newPeers);
     bool addServices(std::vector<std::string>& newServices);
     bool sendInfo(Sock& client, char* request);
     bool processCommand(Sock& client, char* request);
