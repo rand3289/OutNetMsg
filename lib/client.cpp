@@ -14,7 +14,7 @@ static bool ERR(const string& msg){ // makes error handling code a bit shorter
 }
 
 
-int queryOutNet(uint32_t select, HostInfo& outnet, vector<HostInfo>& peers, uint16_t myPort, int rwTimeout, vector<string>* filters ){
+bool queryOutNet(uint32_t select, HostInfo& outnet, vector<HostInfo>& peers, uint16_t myPort, int rwTimeout, vector<string>* filters ){
     stringstream ss;
     ss << "GET /?QUERY=" << select;
     if(myPort>0){ // ad own server port for remote to connect back to
@@ -31,7 +31,7 @@ int queryOutNet(uint32_t select, HostInfo& outnet, vector<HostInfo>& peers, uint
 
     if( sock.connect(outnet.host, outnet.port) ){
         cerr  << "ERROR connecting to " << Sock::ipToString(outnet.host) << ":" << outnet.port << endl;
-        return 0;
+        return false;
     }
 
     int len = (int) ss.str().length();
@@ -45,7 +45,7 @@ int queryOutNet(uint32_t select, HostInfo& outnet, vector<HostInfo>& peers, uint
     int rdsize = sock.readLine(buff, sizeof(buff) );
     if( rdsize < 8 || nullptr == strstr(buff,"200") ) {
         cerr << "ERROR in queryRemoteService() while parsing " << rdsize << " bytes: " << buff << endl;
-        return 0;
+        return false;
     }
     while( sock.readLine(buff, sizeof(buff) ) > 0 ) {} // skip till empty line is read (HTTP protocol)
 

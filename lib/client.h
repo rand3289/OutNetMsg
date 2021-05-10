@@ -44,7 +44,7 @@ enum SELECT {
 // myPort is used for registering your local service with OutNet service
 // rwTimeout is a Read/Write time out in seconds for send() and recv() network operations
 // filters is a list of filters you want OutNet to apply before returning the results
-int queryOutNet(uint32_t select, HostInfo& outnet, std::vector<HostInfo>& peers, uint16_t myPort=0, int rwTimeout=10, std::vector<std::string>* filters = {} );
+bool queryOutNet(uint32_t select, HostInfo& outnet, std::vector<HostInfo>& peers, uint16_t myPort=0, int rwTimeout=10, std::vector<std::string>* filters = {} );
 
 
 #endif // INCLUDED_CLIENT_H

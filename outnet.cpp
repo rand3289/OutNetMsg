@@ -15,7 +15,7 @@ OutNet::OutNet(uint32_t outNetIP, uint16_t outNetPort): service(), filters() {
 }
 
 
-bool OutNet::registerService(uint16_t port){
+bool OutNet::registerService(uint16_t port){ // TODO: move to client.cpp ???
     stringstream ss;
     ss << "GET / HTTP/1.1\r\n";
     ss << "Register: ";
@@ -47,7 +47,8 @@ bool OutNet::registerService(uint16_t port){
 bool OutNet::query(vector<Service>& services, vector<string>& local, int ageSeconds){
     service.services.clear(); // TODO: this is a hack, put local services into "local" right away.
     vector<HostInfo> newData; // results will be returned here
-    queryOutNet(sel, service, newData, 0, 10, &filters);
+    bool ok = queryOutNet(sel, service, newData, 0, 10, &filters);
+    if( !ok ) { return false; }
     std::copy( begin(service.services), end(service.services), back_inserter(local) );
 
 // TODO: remove DEBUGGING:
@@ -62,5 +63,5 @@ bool OutNet::query(vector<Service>& services, vector<string>& local, int ageSeco
             cout << "\t" << s << endl;
         }
     }
-    return true; // TODO:
+    return true;
 }
