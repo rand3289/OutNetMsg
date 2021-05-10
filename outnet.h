@@ -9,7 +9,7 @@ class Service;
 class OutNet{
     HostInfo service;
     std::vector<std::string> filters;
-    uint32_t sel = SELECT::LSVC |SELECT::IP | SELECT::PORT | SELECT::AGE | SELECT::RKEY | SELECT::ISCHK | SELECT::RSVCF;
+    uint32_t sel = SELECT::LSVC |SELECT::IP | SELECT::PORT | SELECT::AGE | SELECT::RKEY | SELECT::ISCHK | SELECT::RSVC | SELECT::RSVCF;
 public:
     OutNet(uint32_t outNetIP, uint16_t outNetPort);
     bool registerService(uint16_t port);

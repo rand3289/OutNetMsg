@@ -53,11 +53,23 @@ int main(int argc, char* argv[]){
     state.loadGroups();
     state.loadMessages();
 
-    system_clock::time_point last = system_clock::now() - seconds(config.refreshTime);
+    system_clock::time_point last = system_clock::now() - seconds(config.refreshTime+1);
     char buff[8*1024];
     cout << "running..." << endl;
 
     while(true){
+        auto now = system_clock::now();
+        auto delta = now - last;
+        auto sec = duration_cast<seconds>(delta).count();
+        if( sec > config.refreshTime ){
+            vector<Service> peers;
+            vector<string> services;
+            outnet.query(peers, services, sec); //  pull updates from outnet
+            state.addPeers(peers);
+            state.addServices(services);
+            last = now;
+        }
+
         Sock client;
         if( server.accept(client) > 0 ){
             uint32_t ip = client.getIP();
@@ -77,17 +89,6 @@ int main(int argc, char* argv[]){
                 state.processCommand(client, buff+5);
             }
             this_thread::sleep_for(seconds(1)); // otherwise winblows freaks out
-        }
-        auto now = system_clock::now();
-        auto delta = now - last;
-        auto sec = duration_cast<seconds>(delta).count();
-        if( sec > config.refreshTime ){
-            vector<Service> peers;
-            vector<string> services;
-            outnet.query(peers, services, sec); //  pull updates from outnet
-            state.addPeers(peers);
-            state.addServices(services);
-            last = now;
         }
     } // while
     return 0;
