@@ -10,7 +10,7 @@ using namespace std;
 OutNet::OutNet(uint32_t outNetIP, uint16_t outNetPort): service(), filters() {
     service.host = outNetIP;
     service.port = outNetPort;
-    filters.push_back("RSVC_EQ_outnetmsg"); // looking for peers only.  not all services
+    filters.push_back("RPROT_EQ_outnetmsg"); // looking for peers only.  not all services RSVC == "http"
 //    filters.push_back("AGE_LT_600"); // get last n minutes only TODO: user config.refreshTime here
 }
 
