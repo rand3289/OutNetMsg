@@ -12,7 +12,7 @@ onmsg.cfg contains ALL OutNetMsg settings.  If it is missing, it is generated th
 ## Internals
 Messenger is written in C++.  To compile under linux or windows (using MinGW64 from https://www.msys2.org) type "make" in the project directory.  OutNetMsg does NOT have dependencies except OutNet and optional OutNetTray.  OutNetTray is used to display notifications when OutNetMsg is not open in the browser.  
 
-./data/ directory contains index.html and  onmsg.js that can be modified to change your messenger look and feel.  
+./msgweb/ directory contains index.html and  onmsg.js that can be modified to change your messenger look and feel.  
 ./lib/ directory contains code borrowed from OutNet service plus json parser (json.hpp) and tweetnacl cryptographic library (tweetnacl.*)
 
 ## TODO:

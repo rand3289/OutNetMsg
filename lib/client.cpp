@@ -13,16 +13,8 @@ static bool ERR(const string& msg){ // makes error handling code a bit shorter
     return false;
 }
 
-static void turnOffBit(uint32_t& mask, uint32_t bits){
-    mask = mask & (0xFFFFFFFF^bits);
-}
-
 
 int queryOutNet(uint32_t select, HostInfo& outnet, vector<HostInfo>& peers, uint16_t myPort, int rwTimeout, vector<string>* filters ){
-    if( outnet.key ){ // if we have remote's public key, do not request it
-        turnOffBit(select, SELECT::LKEY);
-    }
-
     stringstream ss;
     ss << "GET /?QUERY=" << select;
     if(myPort>0){ // ad own server port for remote to connect back to
@@ -33,7 +25,6 @@ int queryOutNet(uint32_t select, HostInfo& outnet, vector<HostInfo>& peers, uint
     }
     ss << " HTTP/1.1\r\n\r\n";
 
-    cout << "Connecting to " << Sock::ipToString(outnet.host) << ":" << outnet.port << endl;
     Sock sock;
     sock.setRWtimeout(rwTimeout); // seconds read/write timeout
     sock.setNoDelay(true); // request is one write()
@@ -43,7 +34,6 @@ int queryOutNet(uint32_t select, HostInfo& outnet, vector<HostInfo>& peers, uint
         return 0;
     }
 
-    cout << ss.str() << endl;
     int len = (int) ss.str().length();
     if(len != sock.write(ss.str().c_str(), len ) ){
         return ERR("sending HTTP request");

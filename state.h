@@ -8,7 +8,7 @@
 #include <chrono>
 
 
-struct Key {
+struct Key { // TODO: merge Key and PubKey
     static constexpr int KEY_SIZE = 32;
     unsigned char key[KEY_SIZE];
     bool operator<(const Key& rhs) const { return memcmp( rhs.key, key, sizeof(key)) > 0; }

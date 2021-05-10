@@ -44,13 +44,16 @@ int main(int argc, char* argv[]){
     cout << "Registering server with OutNet " << Sock::ipToString(config.outIP) << ":" << config.outPort << endl;
 
     OutNet outnet(config.outIP, config.outPort);
-    outnet.registerService(port);
+    if( ! outnet.registerService(port) ){
+        cerr << "Error registering OutNetMsg with OutNet service.  Is it running?  Exiting." << endl;
+        return 2;
+    }
 
     State state;
     state.loadGroups();
     state.loadMessages();
 
-    system_clock::time_point last = system_clock::now();
+    system_clock::time_point last = system_clock::now() - seconds(config.refreshTime);
     char buff[8*1024];
     cout << "running..." << endl;
 

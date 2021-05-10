@@ -19,7 +19,7 @@ bool Key::fromString(const char* str){
 
 std::string Key::toString() const {
     stringstream ss;
-    for(int i = 0; i< sizeof(key); ++i){
+    for(unsigned int i = 0; i< sizeof(key); ++i){
         ss << std::setw(2) << std::setfill('0') << std::hex << (int) key[i];
     }
     return ss.str();

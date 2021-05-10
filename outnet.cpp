@@ -23,9 +23,23 @@ bool OutNet::registerService(uint16_t port){
     ss << "\r\n\r\n";
 
     Sock sock;
-    sock.connect(service.host, service.port);
-    sock.write( ss.str().c_str(), ss.str().length() );
-    return true; // TODO:
+    if( sock.connect(service.host, service.port) ){
+        return false;
+    }
+
+    int len = ss.str().length();
+    if( len != sock.write( ss.str().c_str(), len ) ){
+        return false;
+    }
+
+    char buff[128];
+    if( sock.readLine(buff, sizeof(buff) ) <= 0 ){
+        return false;
+    }
+    if( nullptr == strstr(buff, "200") ){
+        return false;
+    }
+    return true;
 }
 
 
