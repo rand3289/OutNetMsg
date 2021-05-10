@@ -53,7 +53,8 @@ int main(int argc, char* argv[]){
     state.loadGroups();
     state.loadMessages();
 
-    system_clock::time_point last = system_clock::now() - seconds(config.refreshTime+1);
+    constexpr static int monthSeconds = 60*60*24*30; // no peers older than a month
+    system_clock::time_point last = system_clock::now() - seconds(monthSeconds);
     char buff[8*1024];
     cout << "running..." << endl;
 
@@ -64,7 +65,7 @@ int main(int argc, char* argv[]){
         if( sec > config.refreshTime ){
             vector<Service> peers;
             vector<string> services;
-            outnet.query(peers, services, sec); //  pull updates from outnet
+            outnet.query(peers, services, sec/60+1); //  pull updates from outnet for the last N minutes
             state.addPeers(peers);
             state.addServices(services);
             last = now;

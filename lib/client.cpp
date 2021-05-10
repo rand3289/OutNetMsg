@@ -122,7 +122,8 @@ bool queryOutNet(uint32_t select, HostInfo& outnet, vector<HostInfo>& peers, uin
     count = ntohl(count);
 
     for(uint32_t i=0; i< count; ++i){
-        HostInfo& hil = peers.emplace_back();
+        peers.emplace_back();
+        HostInfo& hil = peers.back();
 
         if( selectRet & SELECT::IP ){ // IP does not need ntohl()
             rdsize = sock.read( &hil.host, sizeof(hil.host));

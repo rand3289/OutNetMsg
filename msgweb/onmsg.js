@@ -3,14 +3,18 @@
 "use strict"; // helps detect errors
 
 // https://stackoverflow.com/questions/12460378/how-to-get-json-from-url-in-javascript
-async function loadData( view ) {
-    let url = '/?info='+view;
+async function loadData( view, addParams ) {
+    let url = '/?info='+view+addParams;
     let obj = null;
+    let resp = null;
 
     try {
-        obj = await (await fetch(url)).json();
+        resp = await fetch(url);
+//        console.log( await resp.text() );
+        obj  = await resp.json();
     } catch(e) {
         console.log('error: ' + e);
+        console.log( resp );
     }
 
     console.log(obj); // TODO: comment this out since obejects may be large
@@ -20,9 +24,9 @@ async function loadData( view ) {
 
 async function loadStartup(){
     let text = "ALL messages:<br>";
-    let data = await loadData(0);
+    let data = await loadData(0,"");
     console.log("data.lenght: " + data.length);
-    for(let i=0; i < (data.length-1); ++i){ // -1 because the last item is empty
+    for(let i=0; i < data.length; ++i){
         let msg = data[i].msg;
         text += msg + "<br>";
     }
@@ -70,4 +74,16 @@ function sendMsg(){
     console.log("Sending a message: " + txtArea.value + " to user: " + user);
     txtArea.value = "";
     storeData(msg);
+}
+
+function findUser(){
+    let list = document.getElementById("UserList");
+    let user = document.getElementById("UserKey").value;
+    let data = loadData(4, "&user="+user);
+    if(data.length == 0) {
+        list.innerHTML = "Not found.";
+    }
+    else for(let i=0; i < data.length; ++i) {
+        list.innerHTML += data[i] + "<BR>\r\n";
+    }
 }

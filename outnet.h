@@ -13,7 +13,7 @@ class OutNet{
 public:
     OutNet(uint32_t outNetIP, uint16_t outNetPort);
     bool registerService(uint16_t port);
-    bool query(std::vector<Service>& peers, std::vector<std::string>& local, int ageSeconds);
+    bool query(std::vector<Service>& peers, std::vector<std::string>& local, int ageMinutes);
 };
 
 

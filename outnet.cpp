@@ -10,8 +10,7 @@ using namespace std;
 OutNet::OutNet(uint32_t outNetIP, uint16_t outNetPort): service(), filters() {
     service.host = outNetIP;
     service.port = outNetPort;
-    filters.push_back("RPROT_EQ_outnetmsg"); // looking for peers only.  not all services RSVC == "http"
-//    filters.push_back("AGE_LT_600"); // get last n minutes only TODO: user config.refreshTime here
+    filters.push_back("RPROT_EQ_outnetmsg"); // Looking for peers only,  not all services.
 }
 
 
@@ -43,11 +42,14 @@ bool OutNet::registerService(uint16_t port){ // TODO: move to client.cpp ???
 }
 
 
-// TODO: use ageSeconds to construct a filter
-bool OutNet::query(vector<Service>& services, vector<string>& local, int ageSeconds){
+bool OutNet::query(vector<Service>& services, vector<string>& local, int ageMinutes){
     service.services.clear(); // TODO: this is a hack, put local services into "local" right away.
     vector<HostInfo> newData; // results will be returned here
+    stringstream ss;
+    ss << "AGE_LT_" << ageMinutes;
+    filters.push_back( ss.str() );
     bool ok = queryOutNet(sel, service, newData, 0, 10, &filters);
+    filters.pop_back(); // it can change the next time around
     if( !ok ) { return false; }
     std::copy( begin(service.services), end(service.services), back_inserter(local) );
 

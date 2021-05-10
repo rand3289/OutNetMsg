@@ -53,18 +53,24 @@ enum INFO {   // types of info requested by GUI - used by sendInfo()
     msgUser,  // get ALL messages for a user
     grpList,  // get a list of groups
     grpUsers, // get a list of users in a group
+    findUser, // find all keys containing a hex number
+    findText, // find all messages containing text
 };
 
 
 bool State::sendInfo(Sock& client, char* request){
 // DEBUGGING:
-    string msg = "{\"key\": \"FFFF\",\"time\": \"YYMMDDhhmmss\",\"msg\": \"test msg\"},";
+    string msg = "{\"key\": \"FFFF\",\"time\": \"YYMMDDhhmmss\",\"msg\": \"test msg\"}";
     newMessages.push_back(msg);
+
+    char* sp = strchr(request, ' '); // find space as in "&blah=blah HTTP/1.1"
+    if(sp){ *sp = 0; } // null terminate the string at the space before HTTP/1.1
 
     stringstream ss, data;
     ss << "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: ";
     int requestType = strtol(request, 0, 10); // 10=decimal.  request format: /?info=2
 //    cout << "Request type " << requestType << endl;
+
     switch(requestType){
         case INFO::msgNew: { // send newMessages
             data << "[";     // JSON array
@@ -104,6 +110,29 @@ bool State::sendInfo(Sock& client, char* request){
         case INFO::grpUsers:
             // TODO: send a list of public keys in a group
             break;
+        case INFO::findUser: {
+            char* user = strstr(request, "&user=");
+            if( !user ){
+                writeStatus(client, 400, "Bad Request");
+            }
+            string hexNum = user + strlen("&user=");
+cout << "DEBUG: looking for:" << hexNum << endl;
+            data << "[";
+            for(auto& p: peers){
+                string strKey = p.second.key.toString(); // TODO: very slow !!!
+cout << "DEBUG: key: " << strKey << endl;
+                if( string::npos != strKey.find( hexNum) ){
+                    if(data.str().length() > 10){ data << ","; } // separate keys
+                    data << strKey;
+                }
+            }
+            data << "]"; // close JSON array
+
+            ss << data.str().length() << "\r\n\r\n";
+            client.write(ss.str().c_str(), ss.str().length() );
+            client.write(data.str().c_str(), data.str().length() );
+            break;
+        }
         default: 
             cerr << "WARNING: unknown request type from client: " << requestType << endl;
             writeStatus(client, 400, "Bad Request");
@@ -188,7 +217,8 @@ bool State::msgTo(const string& key, const string& msg, const string& group){ //
 
 
 bool State::msgTo(const Key& key, const string& msg, const string& group){ // send a message to a user
-    cout << "Sending MSG: " << msg << " TO: " << key.toString() << endl;
+    cout << "# Sending MSG: " << msg << endl; 
+    cout << "# Sending  TO: " << key.toString() << endl;
     json jmsg;
     jmsg["time"] = "";  // TODO: add timestamp
     jmsg["group"] = group;
