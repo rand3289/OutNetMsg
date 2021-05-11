@@ -18,7 +18,7 @@ async function loadData( view, addParams ) {
     }
 
     console.log(obj); // TODO: comment this out since obejects may be large
-    return obj;
+    return obj; // return await obj; ???
 }
 
 
@@ -47,11 +47,14 @@ function tabClick(event, elemID){
     }
     console.log("tab: "+ elemID);
     document.getElementById(elemID).style.display = "block";
-    let tdRight = document.getElementById("tdRight");
+
+    // bottom align chat within parent
+    // works for td, doesn't for div.  FUCK!!!
+    let right = document.getElementById("right");
     if(elemID == "Chat"){
-        tdRight.style.verticalAlign = "bottom";
+        right.style.verticalAlign = "bottom";
     } else {
-        tdRight.style.verticalAlign = "top";
+        right.style.verticalAlign = "top";
     }
 }
 
@@ -76,6 +79,7 @@ function sendMsg(){
     storeData(msg);
 }
 
+
 async function findUser(){
     let list = document.getElementById("UserList");
     list.innerHTML = "";
@@ -89,4 +93,22 @@ async function findUser(){
     else for(let i=0; i < data.keys.length; ++i) {
         list.innerHTML += data.keys[i] + "<BR>\r\n";
     }
+}
+
+
+var lastKey="";
+var lastGroup="";
+
+
+function keyClicked(event){
+    let key = event.target.text();
+    console.log("Key clicked: "+ key);
+    lastKey = key;
+}
+
+
+function groupClicked(event){
+    let group = event.target.text();
+    console.log("Group clicked: "+ group);
+    lastGroup = group;
 }

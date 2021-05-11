@@ -3,60 +3,59 @@
         <title>OutNetMsg</title>
         <script src="onmsg.js"></script>
         <style>
-            /* float: left;  transition-duration: 0.4s; */
             .tablink { border-radius: 0px; float: right; border: 1px solid black; }
             .tabs {display: none;}
             .inMsg {color: black; text-align: left;}
             .outMsg {color: tomato; text-align: right;}
+            .blink { background-color:cornflowerblue; color: white; border: 1px solid black; text-decoration: none; padding: 2px 4px 4px 4px; }
         </style>
     </head>
     <body onload="onLoad()">
 
-        <table width=100% height=5%>
-            <tr>
-                <td>
-                    <img src = "favicon.ico"> &nbsp;
-                    <a href="https://github.com/rand3289/OutNetMsg">OutNetMsg</a> &nbsp;
-                    <a href="https://github.com/rand3289/OutNet">OutNet</a>
-                </td>
-                <td align="right">
-                    <div class="tablinks">
-                        <button class="tablink" onclick="tabClick(event, 'Chat')">Chat</button>
-                        <button class="tablink" onclick="tabClick(event, 'Requests')">Requests</button>
-                        <button class="tablink" onclick="tabClick(event, 'Users')">Users</button>
-                        <button class="tablink" onclick="tabClick(event, 'Search')">Search</button>
-                        <button class="tablink" onclick="tabClick(event, 'Settings')">Settings</button>
-                    </div>
-                </td>
-            </tr>
-        </table>
+    <div style="width:100%;">
+        <div style="float:left; width:45%;">
+            <img src = "favicon.ico">
+            <a href="https://github.com/rand3289/OutNetMsg" class="blink">OutNetMsg</a>
+            <a href="https://github.com/rand3289/OutNet" class="blink">OutNet</a>
+        </div>
+        <div style="float:left; width:10%;">
+            <button onClick="switchClick()"> < > </button>
+        </div>
+        <div style="float:right; width:45%;">
+            <button class="tablink" onclick="tabClick(event, 'Chat')">Chat</button>
+            <button class="tablink" onclick="tabClick(event, 'Requests')">Requests</button>
+            <button class="tablink" onclick="tabClick(event, 'Users')">Users</button>
+            <button class="tablink" onclick="tabClick(event, 'Search')">Search</button>
+            <button class="tablink" onclick="tabClick(event, 'Settings')">Settings</button>
+        </div>
+    </div>
 
-        <table width=100% height=95%>
-            <tr>
-                <td align="left" valign="top" style="overflow-y:scroll; background-color:#C0FFC0" width=50%>
-                    <div id="left"></div>
-                </td>
-                <td id="tdRight" align="left" valign="top" style="overflow-y:scroll; background-color:#C0C0FF" width=50%>
-                    <div id="Chat" class="tabs">
-                        <div id="messages">
-                            <div class="outMsg"> Outgoing Message </div>
-                            <div class="inMsg"> Incomming Message </div>
-                        </div>
-                        <textarea id="msg" autofocus="true" rows="2" style="width:85%;"></textarea>
-                        <button onclick="sendMsg()" style="float: right;">></button>
-                    </div>
-                    <div id="Requests" class="tabs"> Request </div>
-                    <div id="Users" class="tabs">
-                        To find a user, type a few consecutive digits from his key:<br>
-                        <input type="text" id="UserKey">
-                        <button onclick="findUser()"> GO </button>
-                        <div id="UserList"></div> <!-- users will be written here -->
-                    </div>
-                    <div id="Search" class="tabs"> Search </div>
-                    <div id="Settings" class="tabs"> Settings </div>
-                </td>
-            </tr>
-        </table>
+    <br><br>
+
+    <div style="width:100%; height:90%; float:left;">
+        <div id="left" style="width:50%; float:left; height:100%; overflow-y:scroll; background:#C0FFC0;">
+        </div>
+        <div id="right" style="margin-left:50%; height:100%; overflow-y:scroll; background:#C0C0FF;">
+            <div id="Chat" class="tabs">
+                <div id="messages"><!-- messages will be written here -->
+                    <div class="outMsg"> Outgoing Message </div>
+                    <div class="inMsg"> Incomming Message </div>
+                </div>
+                <textarea id="msg" autofocus="true" rows="2" style="width:85%;"></textarea>
+                <button onclick="sendMsg()" style="float: right;">></button>
+            </div>
+            <div id="Users" class="tabs">
+                To find a user, type a few consecutive digits from his key:<br>
+                <input type="text" id="UserKey">
+                <button onclick="findUser()"> GO </button>
+                <div id="UserList"></div> <!-- users will be written here -->
+            </div>
+            <div id="Requests" class="tabs"> Request </div>
+            <div id="Search" class="tabs"> Search </div>
+            <div id="Settings" class="tabs"> Settings </div>
+        </div> <!-- right -->
+    </div>
+    <br>
 
     </body>
 </html>
