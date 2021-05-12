@@ -104,12 +104,37 @@ bool State::sendInfo(Sock& client, char* request){
             client.write(data.str().c_str(), data.str().length() );
             break;
         }
-        case INFO::grpList: // TODO: store this info in *.json files and just send files ???
-            // TODO: send a list of groups  as well as a list of users with their names
+        case INFO::grpList: { // TODO: store this info in *.json files and just send files ???
+            // send a list of groups  as well as a list of users with their names
+            data << "[";
+            bool first = true;
+            for(auto& g: groups) {
+                if(!first) { first = false; data << ","; }
+                data << g.first;
+            }
+            data << "]";
+            ss << data.str().length() << "\r\n\r\n";
+            client.write(ss.str().c_str(), ss.str().length() );
+            client.write(data.str().c_str(), data.str().length() );
             break;
-        case INFO::grpUsers:
-            // TODO: send a list of public keys in a group
+        }
+        case INFO::grpUsers: {
+            // send a list of public keys in a group
+            data << "[";
+            string name = request+5;// skip "&grp=";
+            auto keysIt = groups.find(name);
+            if(keysIt!= groups.end() ){
+                for(unsigned int i=0; i < keysIt->second.size(); ++i){
+                    if(i){ data << ","; }
+                    data << "\"" << keysIt->second[i].toString() << "\""; 
+                }
+            }
+            data << "]";
+            ss << data.str().length() << "\r\n\r\n";
+            client.write(ss.str().c_str(), ss.str().length() );
+            client.write(data.str().c_str(), data.str().length() );
             break;
+        }
         case INFO::findUser: {
             char* user = strstr(request, "&user=");
             if( !user ){
@@ -236,7 +261,7 @@ bool State::msgGrp(const string& group, const string& msg){
         cerr << "ERROR: Group " << group << " NOT found!" << endl;
         return false;
     }
-    for(Key& key: grp->second) { // send message for every key in the group
+    for(const Key& key: grp->second) { // send message for every key in the group
         msgTo(key, msg, group);
     }
     return true;
@@ -299,15 +324,43 @@ bool State::processCommand(Sock& client, char* request){
             sendMessages();
             break;
         }
-        case CMD::GRP_CREATE: // creating a new group/list
+        case CMD::GRP_CREATE: { // creating a new group/list
+            string name = cmd["grp"].get<string>();
+            groups[name];
             break;
-        case CMD::GRP_DELETE: // deleting a group
+        }
+        case CMD::GRP_DELETE: { // deleting a group
+            string name = cmd["grp"].get<string>();
+            auto it = groups.find(name);
+            if(it==groups.end()){
+                writeStatus(client, 404, "Not Found");
+                return false;
+            }
+            groups.erase(it);
             break;
-        case CMD::GRP_ADD:    // adding a user to a group/list
+        }
+        case CMD::GRP_ADD: {   // adding a user to a group/list
             // TODO: if key is added to blacklist, find corresponding IPs in peers and add them to IP blacklist
+            string name = cmd["grp"].get<string>();
+            auto it = groups.find(name);
+            if(it==groups.end()){
+                writeStatus(client, 404, "Not Found");
+                return false;
+            }
+
+            string key = cmd["key"].get<string>();
+            Key binKey;
+            binKey.fromString(key);
+            bool ok = it->second.insert(binKey).second;
+            if(!ok){
+                writeStatus(client, 409,"Conflict");
+                return false;
+            }
             break;
-        case CMD::GRP_RM:     // removing a user from a group/list
+        }
+        case CMD::GRP_RM: {    // removing a user from a group/list
             break;
+        }
         default:
             cerr << "Unknown POST request type: " << type << endl;
             writeStatus(client, 400, "Bad Request");

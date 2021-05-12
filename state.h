@@ -40,7 +40,7 @@ class State {
     std::map<Key, std::vector<std::string>> messages;    // incoming messages already sent to the client
     std::map<Key, std::vector<std::string>> outMessages; // unsent messages (recepient is offline)
     std::map<Key, Service> peers;                        // known OutNetMsg peers received from OutNet service
-    std::map<std::string, std::vector<Key>> groups;      // all user groups
+    std::map<std::string, std::set<Key>> groups;      // all user groups
 
     bool msgFrom(const std::string& key, const std::string& signature, const std::vector<std::string>& msgs);
     bool msgTo(const std::string& key, const std::string& msg, const std::string& group); // send msg to 1 user
