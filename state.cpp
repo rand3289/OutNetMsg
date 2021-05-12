@@ -109,7 +109,7 @@ bool State::sendInfo(Sock& client, char* request){
             data << "[";
             bool first = true;
             for(auto& g: groups) {
-                if(!first) { first = false; data << ","; }
+                if(!first) { data << ","; } else { first=false; }
                 data << g.first;
             }
             data << "]";
@@ -124,9 +124,10 @@ bool State::sendInfo(Sock& client, char* request){
             string name = request+5;// skip "&grp=";
             auto keysIt = groups.find(name);
             if(keysIt!= groups.end() ){
-                for(unsigned int i=0; i < keysIt->second.size(); ++i){
-                    if(i){ data << ","; }
-                    data << "\"" << keysIt->second[i].toString() << "\""; 
+                bool first = true;
+                for(const Key& key: keysIt->second){
+                    if(!first){ data<< ","; } else { first=false; }
+                    data << "\"" << key.toString() << "\""; 
                 }
             }
             data << "]";
