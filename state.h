@@ -48,7 +48,8 @@ class State {
     bool msgGrp(const std::string& group, const std::string& msg); // send a message to a group
     bool sendMessages(); // send all messages from outMessages "queue"
     bool saveMessages(); // all newMessages are appended to the saved messages file
-    bool saveGroups();   // when groups are created/deleted/updated they need to be saved to disk
+    bool saveGroup(std::string& name);   // when groups are created/deleted/updated they need to be saved to disk
+    bool deleteGroup(std::string& name); // delete a single group
 public:
     State();
     bool addPeers(std::vector<HostInfo>& newPeers);

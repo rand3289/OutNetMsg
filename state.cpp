@@ -17,7 +17,7 @@ bool Key::fromString(const char* str){
 }
 
 
-std::string Key::toString() const {
+string Key::toString() const {
     stringstream ss;
     for(unsigned int i = 0; i< sizeof(key); ++i){
         ss << std::setw(2) << std::setfill('0') << std::hex << (int) key[i];
@@ -26,21 +26,24 @@ std::string Key::toString() const {
 }
 
 
-// TODO: add permanent groups: BANNED, FRIENDS and INVITES (invitation to be a friend [knows your friend word???] )
+string PERM_GROUPS[] = { "BANNED", "FRIENDS", "INVITES" };
+
+// TODO: add permanent groups: BANNED, FRIENDS and INVITES (invitation to be a friend)
 State::State() {
 }
 
 
-enum CMD {      // types of commands in HTTP request
+enum CMD {      // types of commands in HTTP POST request
+    MESSAGE,     // incoming message
     INVITE,     // invitation to become a friend or join a group
-    MSG_IN,     // direct or group message
-    GRP_LEAVE,  // group leave request
+    LEAVE,      // message sent when leaving the group
 
 // these are GUI commands
     MSG_USER,   // send a message to a user
     MSG_GROUP,  // send a message to a group
     MSG_SEEN,   // mark message read
 
+    GRP_LEAVE,  // group leave request
     GRP_CREATE, // create a new group/list
     GRP_DELETE, // delete a group
     GRP_ADD,    // adding a user to a group/list
@@ -48,7 +51,7 @@ enum CMD {      // types of commands in HTTP request
 };
 
 
-enum INFO {   // types of info requested by GUI - used by sendInfo()
+enum INFO {   // types of info requested by GUI via HTTP GET - used by sendInfo()
     msgNew=0, // get ALL new messages
     msgUser,  // get ALL messages for a user
     grpList,  // get a list of groups
@@ -137,6 +140,7 @@ bool State::sendInfo(Sock& client, char* request){
             break;
         }
         case INFO::findUser: {
+// TODO: when searching for keys, search groups to find existing keys
             char* user = strstr(request, "&user=");
             if( !user ){
                 writeStatus(client, 400, "Bad Request");
@@ -197,7 +201,7 @@ bool State::sendMessages(){
         string signature = "****************************************************************";
 
         stringstream ss;  // main JSON payload
-        ss << "{ type: " << CMD::MSG_IN << ",key: \"" << myKey << "\", sign: \"" << signature << "\", msgs: [" << data.str() << "]}";
+        ss << "{ type: " << CMD::MESSAGE << ",key: \"" << myKey << "\", sign: \"" << signature << "\", msgs: [" << data.str() << "]}";
 
         stringstream head;
         head << "POST / HTTP/1.1\r\n";
@@ -216,8 +220,8 @@ bool State::sendMessages(){
 
 // receive a messageS from a user over HTTP POST
 bool State::msgFrom(const string& key, const string& signature, const vector<string>& msgs){
-    // TODO: check key against blacklist besides filtering done on IP level.
-    // TODO: verify signature over array of msg
+// TODO: check key against blacklist besides filtering done on IP level.
+// TODO: verify signature over array of msg
 // "{ type: " << CMD::MSG_IN << ",key: \"" << myKey << "\", sign: \"" << signature << "\", msgs: [" << data.str() << "]}";
 // msgs contain time, group, msg
     Key binKey;
@@ -298,18 +302,14 @@ bool State::processCommand(Sock& client, char* request){
 
     // TODO: implement authentication.  For now, this is our security model :) LOL
     uint32_t ip = client.getIP();
-    if(type != CMD::INVITE && type!= CMD::MSG_IN && Sock::isRoutable(ip) ){
+    if(type != CMD::INVITE && type!= CMD::MESSAGE && Sock::isRoutable(ip) ){
         cout << "Denying request of type " << type << " from " << Sock::ipToString(ip) << endl;
         writeStatus(client, 403, "DENIED");
     }
 
     cout << "POST request type: " << type << endl;
     switch(type){
-        case CMD::INVITE:     // invitation to become a friend
-//            invite(cmd["key"], cmd["msg"]); // msg is a friend word
-// TODO: invite contains a list of keys, user and group name
-            break;
-        case CMD::MSG_IN:     // someone is sending you a message
+        case CMD::MESSAGE:     // someone is sending you a message
             msgFrom( cmd["key"].get<string>(), cmd["sign"].get<string>(), cmd["msgs"].get<vector<string>>() );
             break;
         case CMD::MSG_USER:    // you are sending a message to someone
@@ -325,9 +325,25 @@ bool State::processCommand(Sock& client, char* request){
             sendMessages();
             break;
         }
+        case CMD::INVITE:     // invitation to become a friend or a group member
+// TODO: invite contains a list of keys, user and group name
+            break;
+        case CMD::LEAVE: { // someone wants to leave your group
+            break;
+        }
+        case CMD::GRP_LEAVE: { // leave a group without deleting it
+            break; // TODO:
+        }
         case CMD::GRP_CREATE: { // creating a new group/list
             string name = cmd["grp"].get<string>();
-            groups[name];
+            auto it = groups.find(name);
+            if(it==groups.end()){
+                groups[name];
+                saveGroup(name);
+            } else {
+                writeStatus(client, 409,"Conflict");
+                return false;
+            }
             break;
         }
         case CMD::GRP_DELETE: { // deleting a group
@@ -338,14 +354,17 @@ bool State::processCommand(Sock& client, char* request){
                 return false;
             }
             groups.erase(it);
+            deleteGroup(name);
             break;
         }
-        case CMD::GRP_ADD: {   // adding a user to a group/list
+        case CMD::GRP_ADD: { // adding a user to a group/list
+        // TODO: check if you created the group first !!!
+        // once user is added, broadcast an invite to the rest of the group
             // TODO: if key is added to blacklist, find corresponding IPs in peers and add them to IP blacklist
             string name = cmd["grp"].get<string>();
             auto it = groups.find(name);
             if(it==groups.end()){
-                writeStatus(client, 404, "Not Found");
+                writeStatus(client, 404, "Group Not Found");
                 return false;
             }
 
@@ -354,12 +373,33 @@ bool State::processCommand(Sock& client, char* request){
             binKey.fromString(key);
             bool ok = it->second.insert(binKey).second;
             if(!ok){
-                writeStatus(client, 409,"Conflict");
+                writeStatus(client, 409,"Key Exists");
                 return false;
             }
+            saveGroup(name);
             break;
         }
         case CMD::GRP_RM: {    // removing a user from a group/list
+        // TODO: check if you created the group first !!!
+        // once user is removed, broadcast an invite to the rest of the group
+            string name = cmd["grp"].get<string>();
+            auto it = groups.find(name);
+            if(it==groups.end()){
+                writeStatus(client, 404, "Group Not Found");
+                return false;
+            }
+
+            string key = cmd["key"].get<string>();
+            Key binKey;
+            binKey.fromString(key);
+
+            auto keyIt = it->second.find(binKey);
+            if( keyIt == it->second.end()){
+                writeStatus(client, 404, "Key Not Found");
+                return false;
+            }
+            it->second.erase(keyIt);
+            saveGroup(name);
             break;
         }
         default:
@@ -390,7 +430,7 @@ bool State::loadMessages(){ // load into messages
 }
 
 
-bool State::saveGroups(){ // when groups are created/deleted/updated they need to be saved to disk
+bool State::saveGroup(string& name){ // when groups are created/deleted/updated they need to be saved to disk
     return true; // TODO:
 }
 
@@ -399,6 +439,9 @@ bool State::loadGroups(){
     return true; // TODO:
 }
 
+bool State::deleteGroup(string& name){ // mark? a group "deleted"  (or move to ./deleted folder ???)
+    return true; // TODO: 
+}
 
 bool State::addPeers(std::vector<HostInfo>& newPeers){
     bool foundNew = false;
