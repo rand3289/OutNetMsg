@@ -46,16 +46,18 @@ function tabClick(event, elemID){
         tabs[i].style.display = "none";
     }
     console.log("tab: "+ elemID);
-    document.getElementById(elemID).style.display = "block";
+    let div = document.getElementById(elemID)
+    div.style.display = "block";
 
-    // bottom align chat within parent
+    // bottom align chat within parent div
     // works for td, doesn't for div.  FUCK!!!
-    let right = document.getElementById("right");
-    if(elemID == "Chat"){
-        right.style.verticalAlign = "bottom";
-    } else {
-        right.style.verticalAlign = "top";
-    }
+//    let right = document.getElementById("right");
+//    if(elemID == "Chat"){
+//        console.log("verticalAlign=bottom");
+//        right.style.verticalAlign = "bottom";
+//    } else {
+//        right.style.verticalAlign = "top";
+//    }
 }
 
 
