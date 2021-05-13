@@ -1,6 +1,6 @@
 // This file is part of OutNet Messenger  https://github.com/rand3289/OutNetMsg
-
 "use strict"; // helps detect errors
+
 
 // https://stackoverflow.com/questions/12460378/how-to-get-json-from-url-in-javascript
 async function loadData( view, addParams ) {
@@ -22,21 +22,50 @@ async function loadData( view, addParams ) {
 }
 
 
-async function loadStartup(){
-    let text = "ALL messages:<br>";
-    let data = await loadData(0,"");
-    console.log("data.lenght: " + data.length);
-    for(let i=0; i < data.length; ++i){
-        let msg = data[i].msg;
-        text += msg + "<br>";
-    }
-    let div = document.getElementById("left");
-    div.innerHTML = text;
+function storeData(obj){
+    let req = new XMLHttpRequest();
+    req.open("POST", "/", true);
+    req.setRequestHeader('Content-Type', 'application/json');
+    let jsn = JSON.stringify(obj);
+    console.log("Sending JSON: " + jsn);
+    req.send( jsn );
 }
 
 
-function onLoad(){
-    loadStartup();
+var globals = {
+    lastKey:"",
+    lastGroup:"",
+    messages: [],
+    groups: [],
+    invites: []
+};
+
+
+function onLoad(){ // on Page load
+    getGroups();
+    getSavedMessages();
+    getMessages();
+    getInvites();
+    setTimeout(getMessages, 1000);
+}
+
+
+// TODO: switch to EventSource() way of polling
+async function getMessages() {
+    let mes = document.getElementById("Messages");
+    let div = document.getElementById("Chat");
+    let display = div.style.display == "block";
+
+    let data = await loadData(0,"");
+    for(let i=0; i < data.length; ++i){
+        let msg = data[i].msg;
+        if(display && globals.lastKey == msg.key ){
+            mes.innerHTML += "<div class='inMsg'>" + msg + "</div>";
+            globals.messages[msg.key].push(msg);
+        }
+    }
+
+    setTimeout(getMessages, 1000);
 }
 
 
@@ -49,6 +78,10 @@ function tabClick(event, elemID){
     let div = document.getElementById(elemID)
     div.style.display = "block";
 
+    if(elemID == "Chat"){
+        let user = document.getElementById("userID");
+        user.innerHTML = global.lastKey;
+    }
     // bottom align chat within parent div
     // works for td, doesn't for div.  FUCK!!!
 //    let right = document.getElementById("right");
@@ -61,18 +94,8 @@ function tabClick(event, elemID){
 }
 
 
-function storeData(obj){
-    let req = new XMLHttpRequest();
-    req.open("POST", "/", true);
-    req.setRequestHeader('Content-Type', 'application/json');
-    let jsn = JSON.stringify(obj);
-    console.log("Sending JSON: " + jsn);
-    req.send( jsn );
-}
-
-
-function sendMsg(){
-    let user = "FFFF"; // TODO: select which user
+function sendMsgClick(){
+    let user = global.lastKey;
     let txtArea = document.getElementById("msg");
     if(txtArea.value.length < 1){ return; }
     let msg = {type: 3, key: user, msg: txtArea.value };
@@ -82,7 +105,7 @@ function sendMsg(){
 }
 
 
-async function findUser(){
+async function findUserClick() {
     let list = document.getElementById("UserList");
     list.innerHTML = "";
 
@@ -98,19 +121,20 @@ async function findUser(){
 }
 
 
-var lastKey="";
-var lastGroup="";
-
-
-function keyClicked(event){
+function keyClick(event){
     let key = event.target.text();
     console.log("Key clicked: "+ key);
-    lastKey = key;
+    global.lastKey = key;
 }
 
 
-function groupClicked(event){
+function groupClick(event){
     let group = event.target.text();
     console.log("Group clicked: "+ group);
-    lastGroup = group;
+    global.lastGroup = group;
+}
+
+
+function switchClick() { // button < > was clicked
+
 }

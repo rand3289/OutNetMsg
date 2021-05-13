@@ -8,6 +8,8 @@
             .inMsg {color: black; text-align: left;}
             .outMsg {color: tomato; text-align: right;}
             .blink { background-color:cornflowerblue; color: white; border: 1px solid black; text-decoration: none; padding: 2px 4px 4px 4px; }
+            #Left { width:50%; float:left; height:100%; overflow-y:scroll; background:#C0FFC0; }
+            #Right { margin-left:50%; height:100%; overflow-y:scroll; background:#C0C0FF; }
         </style>
     </head>
     <body onload="onLoad()">
@@ -33,29 +35,36 @@
     <br><br>
 
     <div style="width:100%; height:90%; float:left;">
-        <div id="Left" style="width:50%; float:left; height:100%; overflow-y:scroll; background:#C0FFC0;">
+        <div id="Left"> <!-- always contains a list of groups and users-->
+            <div id="Groups"> </div>
+            <div id="Friends"> </div>
         </div>
-        <div id="Right" style="margin-left:50%; height:100%; overflow-y:scroll; background:#C0C0FF;">
+        <div id="Right">
             <div id="Chat" class="tabs" style="position: relative; bottom:0; left:0; ">
-                <div id="messages"><!-- messages will be written here -->
+                <div id="Messages"><!-- messages will be written here -->
                     <div class="outMsg"> Outgoing Message </div>
                     <div class="inMsg"> Incomming Message </div>
                 </div>
-                <textarea id="msg" autofocus="true" rows="2" style="width:85%;"></textarea>
-                <button onclick="sendMsg()" style="float: right;">></button>
+                <br>
+                <textarea id="Msg" autofocus="true" rows="2" style="width:100%;"></textarea>
+                <br>
+                <button onclick="sendMsgClick()"> SEND </button>
+                &nbsp; to <div id="userID"> </div>
             </div>
             <div id="Users" class="tabs">
                 To find a user, type a few consecutive digits from his key:<br>
                 <input type="text" id="UserKey">
-                <button onclick="findUser()"> GO </button>
+                <button onclick="findUserClick()">Find</button>
                 <div id="UserList"></div> <!-- users will be written here -->
             </div>
             <div id="Requests" class="tabs"> Request </div>
             <div id="Search" class="tabs"> Search </div>
-            <div id="Settings" class="tabs"> Settings </div>
+            <div id="Settings" class="tabs">
+                <h2> Settings</h2>
+                Feel freee to modify index.html and onmsg.js found in ./msgweb directory to change the look and feel!
+            </div>
         </div> <!-- right -->
     </div>
-    <br>
 
     </body>
 </html>
