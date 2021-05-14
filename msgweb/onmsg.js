@@ -66,17 +66,15 @@ var CMD = {        // commands in HTTP POST request coming from GUI
 async function getGroups(){
     let groups = document.getElementById("Groups");
     let data = await loadData(INFO.grpList, "");
-    for (grp of data){
-//    data.foreach(grp => {
-        groups.innerHTML += "<div id=grp_" + grp + ">";
-        let keys = await loadData(INFO.grpUsers, grp);
-        for( key of keys){
-//        keys.foreach(key => {
+    for (const grp of data){
+        groups.innerHTML += "<div onclick='groupClick(this)' id=" + grp + ">" + grp;
+        let keys = await loadData(INFO.grpUsers, "&grp="+grp);
+        for(const key of keys){
             globals.groups[grp].push(key);
             groups.innerHTML += "<div id="+key>+ ">" + key + "</div>";
-        } //);
+        }
         groups.innerHTML += "</div>";
-    } // );
+    }
 }
 
 
@@ -124,10 +122,6 @@ function tabClick(event, elemID){
     let div = document.getElementById(elemID)
     div.style.display = "block";
 
-    if(elemID == "Chat"){
-        let user = document.getElementById("userID");
-        user.innerHTML = global.lastKey;
-    }
     // bottom align chat within parent div
     // works for td, doesn't for div.  FUCK!!!
 //    let right = document.getElementById("right");
@@ -140,14 +134,23 @@ function tabClick(event, elemID){
 }
 
 
-function sendMsgClick(){
-    let user = global.lastKey;
-    let txtArea = document.getElementById("msg");
-    if(txtArea.value.length < 1){ return; }
-    let msg = {type: 3, key: user, msg: txtArea.value };
-    console.log("Sending a message: " + txtArea.value + " to user: " + user);
-    txtArea.value = "";
+function sendMsgClick(){ // send a message to a user (key) or a group
+    let user = globals.lastKey;
+    if(user.length < 1){
+        user = globals.lastGroup;
+    }
+
+    let txtArea = document.getElementById("Msg");
+    let msgt = txtArea.value;
+    if(msgt.length < 1){ return; }
+
+    let msg = {type: 3, key: user, msg: msgt };
+    console.log("Sending a message: " + msgt + " to user: " + user);
     storeData(msg);
+
+    let msgDiv = document.getElementById("Messages");
+    msgDiv.innerHTML += "<div class='outMsg'>" + msgt + "</div>";
+    txtArea.value = "";
 }
 
 
@@ -167,18 +170,29 @@ async function findUserClick() {
 }
 
 
-function keyClick(event){
-    let key = event.target.text();
-    console.log("Key clicked: "+ key);
-    global.lastKey = key;
+function keyClick(keyDiv){
+    let key = keyDiv.id;
+    console.log("selected key "+ key);
+    globals.lastKey = key;
+    globals.lastGroup = ""; // clear the group if key is selected
+    let userLabel = document.getElementById("UserID");
+    userLabel.innerHTML = key;
+    let butn = document.getElementById("MsgButton");
+    butn.disabled = false;
 }
 
 
-function groupClick(event){
-    let group = event.target.text();
-    console.log("Group clicked: "+ group);
-    global.lastGroup = group;
+function groupClick(groupDiv){
+    let group = groupDiv.id;
+    console.log("selected group "+ group);
+    globals.lastGroup = group;
+    globals.lastKey = ""; // clear the key if group is selected
+    let userLabel = document.getElementById("UserID");
+    userLabel.innerHTML = group;
+    let butn = document.getElementById("MsgButton");
+    butn.disabled = false;
 }
+
 
 async function addGroupClick() {
     let grpsList = document.getElementById("Groups");
@@ -188,10 +202,11 @@ async function addGroupClick() {
     let obj = { type: CMD.GRP_CREATE, grp: group };
     let ret = await storeData(obj);
     // TODO: add error message if ret is not 200
-    grpsList.innerHTML += "<div id="+group+">" + group + "</div>";
+    grpsList.innerHTML += "<div onclick='groupClick(this)' id="+group+">" + group + "</div>";
     field.value = "";
 }
 
-function switchClick() { // button < > was clicked
 
+function switchClick() { // button < > was clicked
+    alert("switch button clicked");
 }

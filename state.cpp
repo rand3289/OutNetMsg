@@ -113,7 +113,7 @@ bool State::sendInfo(Sock& client, char* request){
             bool first = true;
             for(auto& g: groups) {
                 if(!first) { data << ","; } else { first=false; }
-                data << g.first;
+                data << "\"" << g.first << "\"";
             }
             data << "]";
             ss << data.str().length() << "\r\n\r\n";
