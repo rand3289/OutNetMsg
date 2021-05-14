@@ -41,12 +41,58 @@ var globals = {
 };
 
 
-function onLoad(){ // on Page load
+var INFO = {     // info requested by GUI via HTTP GET
+    msgNew: 0,   // get ALL new messages
+    msgUser: 1,  // get ALL messages for a user
+    grpList: 2,  // get a list of groups
+    grpUsers: 3, // get a list of users in a group
+    findUser: 4, // find all keys containing a hex number
+    findText: 5  // find all messages containing text
+};
+
+
+var CMD = {        // commands in HTTP POST request coming from GUI
+    MSG_USER: 3,   // send a message to a user
+    MSG_GROUP: 4,  // send a message to a group
+    MSG_SEEN: 5,   // mark message read
+    GRP_LEAVE: 6,  // group leave request
+    GRP_CREATE: 7, // create a new group/list
+    GRP_DELETE: 8, // delete a group
+    GRP_ADD: 9,    // adding a user to a group/list
+    GRP_RM: 10     // removing a user from a group/list
+};
+
+
+async function getGroups(){
+    let groups = document.getElementById("Groups");
+    let data = await loadData(INFO.grpList, "");
+    for (grp of data){
+//    data.foreach(grp => {
+        groups.innerHTML += "<div id=grp_" + grp + ">";
+        let keys = await loadData(INFO.grpUsers, grp);
+        for( key of keys){
+//        keys.foreach(key => {
+            globals.groups[grp].push(key);
+            groups.innerHTML += "<div id="+key>+ ">" + key + "</div>";
+        } //);
+        groups.innerHTML += "</div>";
+    } // );
+}
+
+
+async function onLoad(){ // on Page load
     getGroups();
     getSavedMessages();
     getMessages();
     getInvites();
     setTimeout(getMessages, 1000);
+}
+
+async function getSavedMessages(){
+    // TODO: 
+}
+async function getInvites(){
+    // TODO:
 }
 
 
@@ -56,7 +102,7 @@ async function getMessages() {
     let div = document.getElementById("Chat");
     let display = div.style.display == "block";
 
-    let data = await loadData(0,"");
+    let data = await loadData(INFO.msgNew,"");
     for(let i=0; i < data.length; ++i){
         let msg = data[i].msg;
         if(display && globals.lastKey == msg.key ){
@@ -134,6 +180,17 @@ function groupClick(event){
     global.lastGroup = group;
 }
 
+async function addGroupClick() {
+    let grpsList = document.getElementById("Groups");
+    let field = document.getElementById("GroupName");
+    let group = field.value;
+    globals.groups[group];
+    let obj = { type: CMD.GRP_CREATE, grp: group };
+    let ret = await storeData(obj);
+    // TODO: add error message if ret is not 200
+    grpsList.innerHTML += "<div id="+group+">" + group + "</div>";
+    field.value = "";
+}
 
 function switchClick() { // button < > was clicked
 

@@ -38,6 +38,13 @@
         <div id="Left"> <!-- always contains a list of groups and users-->
             <div id="Groups"> </div>
             <div id="Friends"> </div>
+            <input type="text" id="GroupName">
+            <button onclick="addGroupClick()">ADD GROUP</button>
+            <br><br>
+            To find a user, type a few consecutive digits from their key:<br>
+            <input type="text" id="UserKey">
+            <button onclick="findUserClick()">Find</button>
+            <div id="UserList"></div> <!-- users will be written here -->
         </div>
         <div id="Right">
             <div id="Chat" class="tabs" style="position: relative; bottom:0; left:0; ">
@@ -51,12 +58,7 @@
                 <button onclick="sendMsgClick()"> SEND </button>
                 &nbsp; to <div id="userID"> </div>
             </div>
-            <div id="Users" class="tabs">
-                To find a user, type a few consecutive digits from his key:<br>
-                <input type="text" id="UserKey">
-                <button onclick="findUserClick()">Find</button>
-                <div id="UserList"></div> <!-- users will be written here -->
-            </div>
+            <div id="Users" class="tabs"> Users - unused ??? </div>
             <div id="Requests" class="tabs"> Request </div>
             <div id="Search" class="tabs"> Search </div>
             <div id="Settings" class="tabs">

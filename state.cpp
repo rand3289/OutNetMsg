@@ -26,15 +26,15 @@ string Key::toString() const {
 }
 
 
-string PERM_GROUPS[] = { "BANNED", "FRIENDS", "INVITES" };
+string PERM_GROUPS[] = { "BANNED", "FRIENDS", "INVITES" }; // TODO: split INVITES into invitED and invitations
 
 // TODO: add permanent groups: BANNED, FRIENDS and INVITES (invitation to be a friend)
 State::State() {
 }
 
 
-enum CMD {      // types of commands in HTTP POST request
-    MESSAGE,     // incoming message
+enum CMD {      // commands in HTTP POST request
+    MESSAGE,    // incoming message
     INVITE,     // invitation to become a friend or join a group
     LEAVE,      // message sent when leaving the group
 
@@ -51,7 +51,7 @@ enum CMD {      // types of commands in HTTP POST request
 };
 
 
-enum INFO {   // types of info requested by GUI via HTTP GET - used by sendInfo()
+enum INFO {   // info requested by GUI via HTTP GET - used by sendInfo()
     msgNew=0, // get ALL new messages
     msgUser,  // get ALL messages for a user
     grpList,  // get a list of groups
@@ -295,7 +295,7 @@ bool State::processCommand(Sock& client, char* request){
         cmd = json::parse(data); // buff2
         type = cmd["type"].get<int>();
     } catch (...) {
-        cout << "ERROR: God damn that shit did not parse!" << endl;
+        cout << "ERROR: damn that shit did not parse!" << endl;
         writeStatus(client, 400, "Bad Request");
         return false;
     }
