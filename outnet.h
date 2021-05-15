@@ -1,3 +1,4 @@
+// This file is part of OutNet Messenger  https://github.com/rand3289/OutNetMsg
 #ifndef INCLUDED_OUTNET_H
 #define INCLUDED_OUTNET_H
 #include "client.h" // in lib dir

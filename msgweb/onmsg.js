@@ -2,15 +2,13 @@
 "use strict"; // helps detect errors
 
 
-// https://stackoverflow.com/questions/12460378/how-to-get-json-from-url-in-javascript
-async function loadData( view, addParams ) {
+async function loadData( view, addParams ) { // get data from server via HTTP GET
     let url = '/?info='+view+addParams;
     let obj = null;
     let resp = null;
 
     try {
         resp = await fetch(url);
-//        console.log( await resp.text() );
         obj  = await resp.json();
     } catch(e) {
         console.log('error: ' + e);
@@ -22,7 +20,7 @@ async function loadData( view, addParams ) {
 }
 
 
-function storeData(obj){
+function storeData(obj){ // send data to server via HTTP POST
     let req = new XMLHttpRequest();
     req.open("POST", "/", true);
     req.setRequestHeader('Content-Type', 'application/json');
@@ -32,7 +30,7 @@ function storeData(obj){
 }
 
 
-var globals = {
+var globals = { // all "global" variables are stored here
     lastKey:"",
     lastGroup:"",
     messages: [],
@@ -41,7 +39,7 @@ var globals = {
 };
 
 
-var INFO = {     // info requested by GUI via HTTP GET
+var INFO = {     // HTTP GET info requests
     msgNew: 0,   // get ALL new messages
     msgUser: 1,  // get ALL messages for a user
     grpList: 2,  // get a list of groups
@@ -63,7 +61,7 @@ var CMD = {        // commands in HTTP POST request coming from GUI
 };
 
 
-async function getGroups(){
+async function getGroups(){ // get a list of groups and all keys in those groups.  list them under "Groups div"
     let groups = document.getElementById("Groups");
     let data = await loadData(INFO.grpList, "");
     for (const grp of data){
@@ -86,16 +84,19 @@ async function onLoad(){ // on Page load
     setTimeout(getMessages, 1000);
 }
 
-async function getSavedMessages(){
+
+async function getSavedMessages(){ // get all messages for a single key / group
     // TODO: 
 }
-async function getInvites(){
+
+
+async function getInvites(){ // get all invitations from all users
     // TODO:
 }
 
 
 // TODO: switch to EventSource() way of polling
-async function getMessages() {
+async function getMessages() { // get all new messages for all keys/ groups
     let mes = document.getElementById("Messages");
     let div = document.getElementById("Chat");
     let display = div.style.display == "block";
@@ -113,7 +114,7 @@ async function getMessages() {
 }
 
 
-function tabClick(event, elemID){
+function tabClick(event, elemID){ // a button that switches tabs on the right side is clicked
     let tabs = document.getElementsByClassName("tabs");
     for(let i=0; i < tabs.length; ++i){
         tabs[i].style.display = "none";
@@ -151,10 +152,13 @@ function sendMsgClick(){ // send a message to a user (key) or a group
     let msgDiv = document.getElementById("Messages");
     msgDiv.innerHTML += "<div class='outMsg'>" + msgt + "</div>";
     txtArea.value = "";
+
+    let butn = document.getElementById("MsgButton");
+    butn.disabled = true;
 }
 
 
-async function findUserClick() {
+async function findUserClick() { // user is trying to find a publick key by providing a par ot it
     let list = document.getElementById("UserList");
     list.innerHTML = "";
 
@@ -170,31 +174,38 @@ async function findUserClick() {
 }
 
 
-function keyClick(keyDiv){
+function keyClick(keyDiv){ // user clicked on a public key
     let key = keyDiv.id;
     console.log("selected key "+ key);
     globals.lastKey = key;
     globals.lastGroup = ""; // clear the group if key is selected
     let userLabel = document.getElementById("UserID");
     userLabel.innerHTML = key;
-    let butn = document.getElementById("MsgButton");
-    butn.disabled = false;
+//    let butn = document.getElementById("MsgButton");
+//    butn.disabled = false;
 }
 
 
-function groupClick(groupDiv){
+function groupClick(groupDiv){ // user clicked on a " message group"
     let group = groupDiv.id;
     console.log("selected group "+ group);
     globals.lastGroup = group;
     globals.lastKey = ""; // clear the key if group is selected
     let userLabel = document.getElementById("UserID");
     userLabel.innerHTML = group;
-    let butn = document.getElementById("MsgButton");
-    butn.disabled = false;
+//    let butn = document.getElementById("MsgButton");
+//    butn.disabled = false;
 }
 
 
-async function addGroupClick() {
+function msgTyped(){ // textarea with id Msg got typed into
+    let msgbut = document.getElementById("MsgButton");
+    let txta = document.getElementById("Msg");
+    msgbut.disabled = txta.value.length <= 0; // enable if len > 0
+    // TODO: make sure global."user name" is set
+}
+
+async function addGroupClick() { // user is adding a "message group"
     let grpsList = document.getElementById("Groups");
     let field = document.getElementById("GroupName");
     let group = field.value;

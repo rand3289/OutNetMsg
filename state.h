@@ -1,3 +1,4 @@
+// This file is part of OutNet Messenger  https://github.com/rand3289/OutNetMsg
 #ifndef INCLUDED_STATE_H
 #define INCLUDED_STATE_H
 #include "sock.h"

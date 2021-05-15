@@ -1,3 +1,4 @@
+# This file is part of OutNet Messenger  https://github.com/rand3289/OutNetMsg
 # -Werror -ansi -pedantic -Wall -Wextra -Wno-unused-parameter
 CC = g++  # notice CFLAGS contains -g which will compile everything in debug mode!
 CFLAGS = -g --std=c++20 -Wall -Wextra -Wno-unused-parameter -pthread -Ilib

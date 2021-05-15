@@ -1,3 +1,4 @@
+<!-- This file is part of OutNet Messenger  https://github.com/rand3289/OutNetMsg -->
 <html>
     <head>
         <title>OutNetMsg</title>
@@ -49,7 +50,7 @@
                 <div id="Messages"><!-- messages will be written here -->
                 </div>
                 <br>
-                <textarea id="Msg" autofocus="true" rows="2" style="width:100%;"></textarea>
+                <textarea id="Msg" autofocus="true" rows="2" style="width:100%;" oninput="msgTyped()"></textarea>
                 <br>
                 <button id="MsgButton" onclick="sendMsgClick()" disabled> SEND </button>
                 &nbsp; to &nbsp; <span id="UserID"> </div>

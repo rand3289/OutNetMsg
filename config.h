@@ -1,3 +1,4 @@
+// This file is part of OutNet Messenger  https://github.com/rand3289/OutNetMsg
 #ifndef INCLUDED_CONFIG_H
 #define INCLUDED_CONFIG_H
 #include <stdint.h> // uint32_t

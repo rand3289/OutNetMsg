@@ -1,3 +1,4 @@
+// This file is part of OutNet Messenger  https://github.com/rand3289/OutNetMsg
 #include "config.h"
 #include "sock.h"
 #include "utils.h"
