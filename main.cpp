@@ -46,9 +46,8 @@ int main(int argc, char* argv[]){
 
     OutNet outnet(config.outIP, config.outPort);
     if( ! outnet.registerService(port) ){
-        cerr << "Error registering OutNetMsg with OutNet service.  Is it running?  Exiting." << endl;
-        return 2;
-    }
+        cerr << "Error registering OutNetMsg with OutNet service.  Is it running?" << endl;
+    } // TODO: check registration (find self in local services) when refreshing info from outnet
 
     State state;
     state.loadGroups();

@@ -114,7 +114,7 @@ async function getMessages() { // get all new messages for all keys/ groups
 }
 
 
-function tabClick(event, elemID){ // a button that switches tabs on the right side is clicked
+function tabBtnClick(event, elemID){ // a button that switches tabs on the right side is clicked
     let tabs = document.getElementsByClassName("tabs");
     for(let i=0; i < tabs.length; ++i){
         tabs[i].style.display = "none";
@@ -174,27 +174,39 @@ async function findUserClick() { // user is trying to find a publick key by prov
 }
 
 
+// TODO: change this whole thing to "lastElement.id" ???
+// merge with groupClick() ???
 function keyClick(keyDiv){ // user clicked on a public key
+    if(globals.lastElement){
+        globals.lastElement.style.backgroundColor = "";
+    }
+    globals.lastElement = keyDiv;
+    globals.lastElement.style.backgroundColor = "yellow";
+
     let key = keyDiv.id;
     console.log("selected key "+ key);
     globals.lastKey = key;
     globals.lastGroup = ""; // clear the group if key is selected
+
     let userLabel = document.getElementById("UserID");
     userLabel.innerHTML = key;
-//    let butn = document.getElementById("MsgButton");
-//    butn.disabled = false;
 }
 
 
 function groupClick(groupDiv){ // user clicked on a " message group"
+    if(globals.lastElement){
+        globals.lastElement.style.backgroundColor = "";
+    }
+    globals.lastElement = groupDiv;
+    globals.lastElement.style.backgroundColor = "yellow";
+
     let group = groupDiv.id;
     console.log("selected group "+ group);
     globals.lastGroup = group;
     globals.lastKey = ""; // clear the key if group is selected
+
     let userLabel = document.getElementById("UserID");
     userLabel.innerHTML = group;
-//    let butn = document.getElementById("MsgButton");
-//    butn.disabled = false;
 }
 
 
@@ -202,8 +214,11 @@ function msgTyped(){ // textarea with id Msg got typed into
     let msgbut = document.getElementById("MsgButton");
     let txta = document.getElementById("Msg");
     msgbut.disabled = txta.value.length <= 0; // enable if len > 0
-    // TODO: make sure global."user name" is set
+    if(globals.lastElement == undefined){ // make sure global."user name" is set
+        msgbut.disabled = true;           // otherwise who are we sending a message to?
+    }
 }
+
 
 async function addGroupClick() { // user is adding a "message group"
     let grpsList = document.getElementById("Groups");

@@ -4,30 +4,26 @@
         <title>OutNetMsg</title>
         <script src="onmsg.js"></script>
         <style>
-            .tablink { border-radius: 0px; float: right; border: 1px solid black; }
+            .btn { border-radius: 0px; border: 1px solid black; background-color:lightgreen;}
             .tabs {display: none;}
             .inMsg {color: black; text-align: left;}
             .outMsg {color: tomato; text-align: right;}
-            .blink { background-color:cornflowerblue; color: white; border: 1px solid black; text-decoration: none; padding: 2px 4px 4px 4px; }
-            #Left { width:50%; float:left; height:100%; overflow-y:scroll; background:#C0FFC0; }
+            #Left { width:50%; float:left; height:100%; overflow-y:scroll; background:#C0C0FF; }
             #Right { margin-left:50%; height:100%; overflow-y:scroll; background:#C0C0FF; }
         </style>
     </head>
     <body onload="onLoad()">
 
     <div style="width:100%;">
-        <div style="float:left; width:45%;">
-            <img src = "favicon.ico">
-            <a href="https://github.com/rand3289/OutNetMsg" class="blink">OutNetMsg</a>
-            <a href="https://github.com/rand3289/OutNet" class="blink">OutNet</a>
+        <div style="float:left; width:50%;">
+            <img src = "favicon.ico" alt="avatar" style="vertical-align: middle;">
+            <button class="btn" onclick="location='https://github.com/rand3289/OutNetMsg'"> OutNetMsg</button>
+            <button class="btn" onclick="location='https://github.com/rand3289/OutNet'"> OutNet</button>
         </div>
-        <div style="float:left; width:10%;">
-            <button onClick="switchClick()"> < > </button>
-        </div>
-        <div style="float:right; width:45%;">
-            <button class="tablink" onclick="tabClick(event, 'Chat')">Chat</button>
-            <button class="tablink" onclick="tabClick(event, 'Search')">Search</button>
-            <button class="tablink" onclick="tabClick(event, 'Settings')">Settings</button>
+        <div style="float:right; width:50%;">
+            <button class="btn" onclick="tabBtnClick(event, 'Chat')">Chat</button>
+            <button class="btn" onclick="tabBtnClick(event, 'Search')">Users</button>
+            <button class="btn" onclick="tabBtnClick(event, 'Settings')">Settings</button>
         </div>
     </div>
 
@@ -35,30 +31,31 @@
 
     <div style="width:100%; height:90%; float:left;">
         <div id="Left"> <!-- always contains a list of groups and users-->
-            <div id="Groups"> </div>
-            <div id="Friends"> </div>
             <input type="text" id="GroupName">
-            <button onclick="addGroupClick()">ADD GROUP</button>
-            <br><br>
-            To find a user, type a few consecutive digits from their key:<br>
-            <input type="text" id="UserKey">
-            <button onclick="findUserClick()">Find</button>
-            <div id="UserList"></div> <!-- users will be written here -->
+            <button class="btn" onclick="addGroupClick()">ADD GROUP</button>
+            <div id="Groups"> </div>
+            <hr width=30% align="left">
+            <div id="Friends"> </div>
         </div>
         <div id="Right">
+            <div id="Search" class="tabs">
+                To find a user, type a few consecutive digits from their key:<br>
+                <input type="text" id="UserKey">
+                <button class="btn" onclick="findUserClick()">Find</button>
+                <div id="UserList"></div> <!-- users will be written here -->
+            </div>
+            <div id="Settings" class="tabs">
+                <h2>Settings</h2>
+                Feel freee to modify index.html and onmsg.js found in ./msgweb directory to change the look and feel!
+            </div>
             <div id="Chat" class="tabs" style="display: block;">
                 <div id="Messages"><!-- messages will be written here -->
                 </div>
                 <br>
                 <textarea id="Msg" autofocus="true" rows="2" style="width:100%;" oninput="msgTyped()"></textarea>
                 <br>
-                <button id="MsgButton" onclick="sendMsgClick()" disabled> SEND </button>
+                <button class="btn" id="MsgButton" onclick="sendMsgClick()" disabled> SEND </button>
                 &nbsp; to &nbsp; <span id="UserID"> </div>
-            </div>
-            <div id="Search" class="tabs"> Search </div>
-            <div id="Settings" class="tabs">
-                <h2> Settings</h2>
-                Feel freee to modify index.html and onmsg.js found in ./msgweb directory to change the look and feel!
             </div>
         </div> <!-- right -->
     </div>
