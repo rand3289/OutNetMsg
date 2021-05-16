@@ -113,7 +113,7 @@ bool State::sendInfo(Sock& client, char* request){
             data << "[";
             bool first = true;
             for(auto& g: groups) {
-                if(!first) { data << ","; } else { first=false; }
+                if(first) { first=false; } else { data << ","; }
                 data << "\"" << g.first << "\"";
             }
             data << "]";
@@ -125,12 +125,13 @@ bool State::sendInfo(Sock& client, char* request){
         case INFO::grpUsers: {
             // send a list of public keys in a group
             data << "[";
-            string name = request+5;// skip "&grp=";
+            char* eq = strchr(request, '=');// skip "&grp=";
+            string name = eq ? eq+1 : ""; // null SHOULD turn to "" in string constructor but causes undefined behavior
             auto keysIt = groups.find(name);
             if(keysIt!= groups.end() ){
                 bool first = true;
                 for(const Key& key: keysIt->second){
-                    if(!first){ data<< ","; } else { first=false; }
+                    if(first){ first=false; } else { data<< ","; }
                     data << "\"" << key.toString() << "\""; 
                 }
             }
@@ -437,6 +438,11 @@ bool State::saveGroup(string& name){ // when groups are created/deleted/updated 
 
 
 bool State::loadGroups(){
+    Key key;
+    groups["Friends"] = {key, key, key, key}; // DEBUGGING !!!
+    groups["group3"]  = {key, key, key};
+    groups["group2"]  = {key, key};
+    groups["group1"]  = {key};
     return true; // TODO:
 }
 

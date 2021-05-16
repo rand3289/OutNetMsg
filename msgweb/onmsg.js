@@ -61,27 +61,35 @@ var CMD = {        // commands in HTTP POST request coming from GUI
 };
 
 
+async function onLoad(){ // on Page load
+    getGroups();
+    getSavedMessages();
+    getInvites();
+    getMessages();
+    setTimeout(getMessages, 2000);
+}
+
+
 async function getGroups(){ // get a list of groups and all keys in those groups.  list them under "Groups div"
     let groups = document.getElementById("Groups");
     let data = await loadData(INFO.grpList, "");
     for (const grp of data){
+        if(grp == "Friends") { continue; } // Friends go in Friends DIV
+
         groups.innerHTML += "<div onclick='groupClick(this)' id=" + grp + ">" + grp;
         let keys = await loadData(INFO.grpUsers, "&grp="+grp);
         for(const key of keys){
-            globals.groups[grp].push(key);
-            groups.innerHTML += "<div id="+key>+ ">" + key + "</div>";
+//            globals.groups[grp].push(key); // TODO:
+            groups.innerHTML += "<div align='right' id=" +key+ ">" +key+ "</div>";
         }
-        groups.innerHTML += "</div>";
+        groups.innerHTML += "</div>"; // group div
     }
-}
 
-
-async function onLoad(){ // on Page load
-    getGroups();
-    getSavedMessages();
-    getMessages();
-    getInvites();
-    setTimeout(getMessages, 1000);
+    let friends = document.getElementById("Friends"); // now load friends
+    let keys = await loadData(INFO.grpUsers, "&grp=Friends");
+    for(const key of keys){
+        friends.innerHTML += "<div onclick='keyClick(this)' id=" +key+ ">" +key+ "</div>";
+    }
 }
 
 
@@ -123,6 +131,7 @@ function tabBtnClick(event, elemID){ // a button that switches tabs on the right
     let div = document.getElementById(elemID)
     div.style.display = "block";
 
+// TODO: valign this shit to the bottom
     // bottom align chat within parent div
     // works for td, doesn't for div.  FUCK!!!
 //    let right = document.getElementById("right");
@@ -174,8 +183,21 @@ async function findUserClick() { // user is trying to find a publick key by prov
 }
 
 
+async function addGroupClick() { // user is adding a "message group"
+    let grpsList = document.getElementById("Groups");
+    let field = document.getElementById("GroupName");
+    let group = field.value;
+    globals.groups[group];
+    let obj = { type: CMD.GRP_CREATE, grp: group };
+    let ret = await storeData(obj);
+    // TODO: add error message if ret is not 200
+    grpsList.innerHTML += "<div onclick='groupClick(this)' id="+group+">" + group + "</div>";
+    field.value = "";
+}
+
+
 // TODO: change this whole thing to "lastElement.id" ???
-// merge with groupClick() ???
+// TODO: merge with groupClick() ???
 function keyClick(keyDiv){ // user clicked on a public key
     if(globals.lastElement){
         globals.lastElement.style.backgroundColor = "";
@@ -193,7 +215,7 @@ function keyClick(keyDiv){ // user clicked on a public key
 }
 
 
-function groupClick(groupDiv){ // user clicked on a " message group"
+function groupClick(groupDiv){ // user clicked on a "message group"
     if(globals.lastElement){
         globals.lastElement.style.backgroundColor = "";
     }
@@ -210,29 +232,11 @@ function groupClick(groupDiv){ // user clicked on a " message group"
 }
 
 
-function msgTyped(){ // textarea with id Msg got typed into
+function msgTyped(){ // textarea with id Msg changed
     let msgbut = document.getElementById("MsgButton");
     let txta = document.getElementById("Msg");
     msgbut.disabled = txta.value.length <= 0; // enable if len > 0
     if(globals.lastElement == undefined){ // make sure global."user name" is set
         msgbut.disabled = true;           // otherwise who are we sending a message to?
     }
-}
-
-
-async function addGroupClick() { // user is adding a "message group"
-    let grpsList = document.getElementById("Groups");
-    let field = document.getElementById("GroupName");
-    let group = field.value;
-    globals.groups[group];
-    let obj = { type: CMD.GRP_CREATE, grp: group };
-    let ret = await storeData(obj);
-    // TODO: add error message if ret is not 200
-    grpsList.innerHTML += "<div onclick='groupClick(this)' id="+group+">" + group + "</div>";
-    field.value = "";
-}
-
-
-function switchClick() { // button < > was clicked
-    alert("switch button clicked");
 }
