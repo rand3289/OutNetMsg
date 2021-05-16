@@ -164,6 +164,9 @@ function sendMsgClick(){ // send a message to a user (key) or a group
 
     let butn = document.getElementById("MsgButton");
     butn.disabled = true;
+
+    let userLabel = document.getElementById("UserID");
+    userLabel.scrollIntoView();
 }
 
 
