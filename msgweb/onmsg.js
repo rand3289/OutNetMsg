@@ -66,29 +66,46 @@ async function onLoad(){ // on Page load
     getSavedMessages();
     getInvites();
     getMessages();
-    setTimeout(getMessages, 2000);
 }
 
 
 async function getGroups(){ // get a list of groups and all keys in those groups.  list them under "Groups div"
     let groups = document.getElementById("Groups");
     let data = await loadData(INFO.grpList, "");
+    globals.groups = new Map();
     for (const grp of data){
-        if(grp == "Friends") { continue; } // Friends go in Friends DIV
+        globals.groups.set(grp, new Set() );
+        if(grp == "Friends") { continue; } // Friends go in Friends DIV (see below)
 
         groups.innerHTML += "<div onclick='groupClick(this)' id=" + grp + ">" + grp;
         let keys = await loadData(INFO.grpUsers, "&grp="+grp);
         for(const key of keys){
-//            globals.groups[grp].push(key); // TODO:
+            globals.groups.get(grp).add(key);
             groups.innerHTML += "<div align='right' id=" +key+ ">" +key+ "</div>";
         }
         groups.innerHTML += "</div>"; // group div
     }
 
+    // Friends group is treated different since user keys do not go under the group name in UI
     let friends = document.getElementById("Friends"); // now load friends
     let keys = await loadData(INFO.grpUsers, "&grp=Friends");
     for(const key of keys){
+        globals.groups.get("Friends").add(key);
         friends.innerHTML += "<div onclick='keyClick(this)' id=" +key+ ">" +key+ "</div>";
+    }
+
+    let allSet = new Set(); // build a set to remove duplicates
+    for(const gval of globals.groups.values() ){
+        for(const gkey of gval){
+            allSet.add(gkey);
+        }
+    }
+
+    // put ALL users (public keys) into ALL users div for addition to other groups
+    let all = document.getElementById("AllUsers");
+    all.innerHTML = "";     // clear existing
+    for(const key of allSet){
+        all.innerHTML += "<div id=" +key+ ">" +key+ "</div>";
     }
 }
 
@@ -118,7 +135,7 @@ async function getMessages() { // get all new messages for all keys/ groups
         }
     }
 
-    setTimeout(getMessages, 1000);
+    setTimeout(getMessages, 2000);
 }
 
 
@@ -190,7 +207,7 @@ async function addGroupClick() { // user is adding a "message group"
     let grpsList = document.getElementById("Groups");
     let field = document.getElementById("GroupName");
     let group = field.value;
-    globals.groups[group];
+    globals.groups.set(group, new Set() );
     let obj = { type: CMD.GRP_CREATE, grp: group };
     let ret = await storeData(obj);
     // TODO: add error message if ret is not 200

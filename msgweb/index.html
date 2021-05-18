@@ -7,7 +7,7 @@
             .btn { border-radius: 0px; border: 1px solid black; background-color:lightgreen;}
             .tabs {display: none;}
             .inMsg {color: black; text-align: left;}
-            .outMsg {color: tomato; text-align: right;}
+            .outMsg {color:red; text-align: right;}
             #Left { width:50%; float:left; height:100%; overflow-y:scroll; background:#C0C0FF; }
             #Right { margin-left:50%; height:100%; overflow-y:scroll; background:#C0C0FF; }
         </style>
@@ -39,6 +39,8 @@
         </div>
         <div id="Right">
             <div id="Search" class="tabs">
+                <div id="AllUsers"></div> <!-- All known users from all groups -->
+                <hr>
                 To find a user, type a few consecutive digits from their key:<br>
                 <input type="text" id="UserKey">
                 <button class="btn" onclick="findUserClick()">Find</button>
