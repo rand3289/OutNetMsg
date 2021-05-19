@@ -31,10 +31,11 @@ function storeData(obj){ // send data to server via HTTP POST
 
 
 var globals = { // all "global" variables are stored here
-    lastKey:"",
-    lastGroup:"",
+    lastKey: "",
+    lastGroup: "",
+    lastElement: null,
     messages: [],
-    groups: [],
+    groups: null, // map of string -> vector of strings
     invites: []
 };
 
@@ -74,18 +75,10 @@ async function getGroups(){ // get a list of groups and all keys in those groups
     globals.groups = new Map();
     for (const grp of data){
         globals.groups.set(grp, new Set() );
-        if(grp == "Friends") { continue; } // Friends go in Friends DIV (see below)
-
         let keys = await loadData(INFO.grpUsers, "&grp="+grp);
         for(const key of keys){
             globals.groups.get(grp).add(key);
         }
-    }
-
-    // Friends group is treated different since user keys do not go under the group name in UI
-    let keys = await loadData(INFO.grpUsers, "&grp=Friends");
-    for(const key of keys){
-        globals.groups.get("Friends").add(key);
     }
     showGroupsAndUsers();
 }
@@ -173,17 +166,6 @@ function tabBtnClick(event, elemID){ // a button that switches tabs on the right
     console.log("tab: "+ elemID);
     let div = document.getElementById(elemID)
     div.style.display = "block";
-
-// TODO: valign this shit to the bottom
-    // bottom align chat within parent div
-    // works for td, doesn't for div.  FUCK!!!
-//    let right = document.getElementById("right");
-//    if(elemID == "Chat"){
-//        console.log("verticalAlign=bottom");
-//        right.style.verticalAlign = "bottom";
-//    } else {
-//        right.style.verticalAlign = "top";
-//    }
 }
 
 
