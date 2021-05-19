@@ -23,7 +23,6 @@
         <div style="float:right; width:50%;">
             <button class="btn" onclick="tabBtnClick(event, 'Chat')">Chat</button>
             <button class="btn" onclick="tabBtnClick(event, 'Search')">Users</button>
-            <button class="btn" onclick="tabBtnClick(event, 'Settings')">Settings</button>
         </div>
     </div>
 
@@ -31,10 +30,9 @@
 
     <div style="width:100%; height:90%; float:left;">
         <div id="Left"> <!-- always contains a list of groups and users-->
+            <div id="Groups"> </div>
             <input type="text" id="GroupName">
             <button class="btn" onclick="addGroupClick()">ADD GROUP</button>
-            <div id="Groups"> </div>
-            <hr width=30% align="left">
             <div id="Friends"> </div>
         </div>
         <div id="Right">
@@ -45,10 +43,6 @@
                 <input type="text" id="UserKey">
                 <button class="btn" onclick="findUserClick()">Find</button>
                 <div id="UserList"></div> <!-- users will be written here -->
-            </div>
-            <div id="Settings" class="tabs">
-                <h2>Settings</h2>
-                Feel freee to modify index.html and onmsg.js found in ./msgweb directory to change the look and feel!
             </div>
             <div id="Chat" class="tabs" style="display: block;">
                 <div id="Messages"><!-- messages will be written here -->

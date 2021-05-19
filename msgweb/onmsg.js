@@ -105,7 +105,7 @@ async function getGroups(){ // get a list of groups and all keys in those groups
     let all = document.getElementById("AllUsers");
     all.innerHTML = "";     // clear existing
     for(const key of allSet){
-        all.innerHTML += "<div id=" +key+ ">" +key+ "</div>";
+        all.innerHTML += "<div id=" +key+ " onclick=keyAddClick(this)>" +key+ "</div>";
     }
 }
 
@@ -136,6 +136,37 @@ async function getMessages() { // get all new messages for all keys/ groups
     }
 
     setTimeout(getMessages, 2000);
+}
+
+
+function refreshGroups(){
+    let groups = document.getElementById("Groups");
+    groups.innerHTML = "";
+    for (const [grp, keys] of globals.groups){
+        if(grp == "Friends") { continue; } // Friends go in Friends DIV (see below)
+        groups.innerHTML += "<div onclick='groupClick(this)' id=" + grp + ">" + grp;
+        for(const key of keys){
+            groups.innerHTML += "<div align='right' id=" +key+ ">" +key+ "</div>";
+        }
+        groups.innerHTML += "</div>"; // group div
+    }
+
+    // Friends group is treated different since user keys do not go under the group name in UI
+    let friends = document.getElementById("Friends"); // now load friends
+    friends.innerHTML = "";
+    for(const key of globals.groups.get("Friends").values() ){
+        friends.innerHTML += "<div onclick='keyClick(this)' id=" +key+ ">" +key+ "</div>";
+    }
+}
+
+
+function keyAddClick(key){ // add key to group by clicking on a key
+    if(globals.lastGroup.length > 0){
+        let grp = globals.groups.get(globals.lastGroup);
+        grp.add(key.id);
+        console.log("Added " + key.id + " to group " +globals.lastGroup);
+    }
+    refreshGroups();
 }
 
 
