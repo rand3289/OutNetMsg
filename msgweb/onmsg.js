@@ -20,13 +20,19 @@ async function loadData( view, addParams ) { // get data from server via HTTP GE
 }
 
 
-function storeData(obj){ // send data to server via HTTP POST
+async function storeData(obj){ // send data to server via HTTP POST
     let req = new XMLHttpRequest();
     req.open("POST", "/", true);
     req.setRequestHeader('Content-Type', 'application/json');
     let jsn = JSON.stringify(obj);
     console.log("Sending JSON: " + jsn);
-    req.send( jsn );
+
+    return new Promise (
+        function(resolve) { // Fuck, JS is so backwards!
+            req.onreadystatechange = function () { return resolve(this.status); }
+            req.send( jsn );
+        }
+    );
 }
 
 
@@ -101,6 +107,9 @@ async function getMessages() { // get all new messages for all keys/ groups
     let display = div.style.display == "block";
 
     let data = await loadData(INFO.msgNew,"");
+    setTimeout(getMessages, 2000);
+    if( data == null ){ return; }
+
     for(let i=0; i < data.length; ++i){
         let msg = data[i].msg;
         if(display && globals.lastKey == msg.key ){
@@ -108,8 +117,6 @@ async function getMessages() { // get all new messages for all keys/ groups
             globals.messages[msg.key].push(msg);
         }
     }
-
-    setTimeout(getMessages, 2000);
 }
 
 
@@ -169,7 +176,7 @@ function tabBtnClick(event, elemID){ // a button that switches tabs on the right
 }
 
 
-function sendMsgClick(){ // send a message to a user (key) or a group
+async function sendMsgClick(){ // send a message to a user (key) or a group
     let user = globals.lastKey;
     if(user.length < 1){
         user = globals.lastGroup;
@@ -181,7 +188,12 @@ function sendMsgClick(){ // send a message to a user (key) or a group
 
     let msg = {type: 3, key: user, msg: msgt };
     console.log("Sending a message: " + msgt + " to user: " + user);
-    storeData(msg);
+    let ret = await storeData(msg);
+    if(ret != 200){
+        alert("Error sending message to server.");
+        console.log("Error sending message to server. HTTP returned " + ret);
+        return;
+    }
 
     let msgDiv = document.getElementById("Messages");
     msgDiv.innerHTML += "<div class='outMsg'>" + msgt + "</div>";
@@ -218,7 +230,13 @@ async function addGroupClick() { // user is adding a "message group"
     globals.groups.set(group, new Set() );
     let obj = { type: CMD.GRP_CREATE, grp: group };
     let ret = await storeData(obj);
-    // TODO: add error message if ret is not 200 // TODO: call showGroupsAndUsers() ???
+    if(ret != 200){
+        alert("Error sending message to server.");
+        console.log("Error sending message to server. HTTP returned " + ret);
+        return;
+    }
+
+    // TODO: call showGroupsAndUsers() ???
     grpsList.innerHTML += "<div  class='clickable' onclick='groupClick(this)' id="+group+">" + group + "</div>";
     field.value = "";
 }
