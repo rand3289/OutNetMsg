@@ -76,7 +76,7 @@ async function onLoad(){ // on Page load
 }
 
 
-async function getGroups(){ // get a list of groups and all keys in those groups.  list them under "Groups div"
+async function getGroups(){ // get a list of groups and all keys in those groups from the server
     let data = await loadData(INFO.grpList, "");
     globals.groups = new Map();
     for (const grp of data){
@@ -102,13 +102,13 @@ async function getInvites(){ // get all invitations from all users
 
 // TODO: switch to EventSource() way of polling
 async function getMessages() { // get all new messages for all keys/ groups
-    let mes = document.getElementById("Messages");
-    let div = document.getElementById("Chat");
-    let display = div.style.display == "block";
-
     let data = await loadData(INFO.msgNew,"");
     setTimeout(getMessages, 2000);
     if( data == null ){ return; }
+
+    let mes = document.getElementById("Messages");
+    let div = document.getElementById("Chat");
+    let display = div.style.display == "block"; // visible
 
     for(let i=0; i < data.length; ++i){
         let msg = data[i].msg;
@@ -152,6 +152,9 @@ function showGroupsAndUsers(){
     for(const key of allSet){
         all.innerHTML += "<div class='clickable' onclick=keyAddClick(this) id=" +key+ ">" +key+ "</div>";
     }
+
+    let userLabel = document.getElementById("UserID"); // username next to SEND button
+    userLabel.innerHTML = "";
 }
 
 
@@ -174,6 +177,8 @@ async function keyAddClick(key){ // add key to group by clicking on a key
     let grp = globals.groups.get(group);
     grp.add(key.id);
     console.log("Added " + key.id + " to group " +group);
+    globals.lastKey = "";
+    globals.lastGroup = "";
     showGroupsAndUsers();
 }
 
@@ -198,9 +203,9 @@ async function sendMsgClick(){ // send a message to a user (key) or a group
     let txtArea = document.getElementById("Msg");
     let msgt = txtArea.value;
     if(msgt.length < 1){ return; }
+    console.log("Sending a message: " + msgt + " to user: " + user);
 
     let msg = {type: 3, key: user, msg: msgt };
-    console.log("Sending a message: " + msgt + " to user: " + user);
     let ret = await storeData(msg);
     if(ret != 200){
         alert("Error sending message to server.");
@@ -237,10 +242,9 @@ async function findUserClick() { // user is trying to find a publick key by prov
 
 
 async function addGroupClick() { // user is adding a "message group"
-    let grpsList = document.getElementById("Groups");
     let field = document.getElementById("GroupName");
     let group = field.value;
-    globals.groups.set(group, new Set() );
+
     let obj = { type: CMD.GRP_CREATE, grp: group };
     let ret = await storeData(obj);
     if(ret != 200){
@@ -249,9 +253,11 @@ async function addGroupClick() { // user is adding a "message group"
         return;
     }
 
-    // TODO: call showGroupsAndUsers() ???
-    grpsList.innerHTML += "<div  class='clickable' onclick='groupClick(this)' id="+group+">" + group + "</div>";
+    globals.groups.set(group, new Set() );
+    globals.lastGroup = ""; // TODO: set lastGroup to new group???
+    globals.lastKey = "";
     field.value = "";
+    showGroupsAndUsers();
 }
 
 
@@ -286,7 +292,7 @@ function groupClick(groupDiv){ // user clicked on a "message group"
     globals.lastGroup = group;
     globals.lastKey = ""; // clear the key if group is selected
 
-    let userLabel = document.getElementById("UserID");
+    let userLabel = document.getElementById("UserID"); //  it's a <span>
     userLabel.innerHTML = group;
 }
 
@@ -295,7 +301,7 @@ function msgTyped(){ // textarea with id Msg changed
     let msgbut = document.getElementById("MsgButton");
     let txta = document.getElementById("Msg");
     msgbut.disabled = txta.value.length <= 0; // enable if len > 0
-    if(globals.lastElement == undefined){ // make sure global."user name" is set
+    if(globals.lastGroup == "" && globals.lastKey == ""){ // make sure global."user name" is set
         msgbut.disabled = true;           // otherwise who are we sending a message to?
     }
 }
