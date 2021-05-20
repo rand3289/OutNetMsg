@@ -119,7 +119,7 @@ function showGroupsAndUsers(){
     groups.innerHTML = "";
     for (const [grp, keys] of globals.groups){
         if(grp == "Friends") { continue; } // Friends go in Friends DIV (see below)
-        groups.innerHTML += "<div onclick='groupClick(this)' id=" + grp + ">" + grp;
+        groups.innerHTML += "<div class='clickable' onclick='groupClick(this)' id=" + grp + ">" + grp;
         for(const key of keys){
             groups.innerHTML += "<div align='right' id=" +key+ ">" +key+ "</div>";
         }
@@ -130,7 +130,7 @@ function showGroupsAndUsers(){
     let friends = document.getElementById("Friends"); // now load friends
     friends.innerHTML = "";
     for(const key of globals.groups.get("Friends").values() ){
-        friends.innerHTML += "<div onclick='keyClick(this)' id=" +key+ ">" +key+ "</div>";
+        friends.innerHTML += "<div class='clickable' onclick='keyClick(this)' id=" +key+ ">" +key+ "</div>";
     }
 
     let allSet = new Set(); // build a set of ALL known keys to remove duplicates
@@ -143,7 +143,7 @@ function showGroupsAndUsers(){
     let all = document.getElementById("AllUsers");
     all.innerHTML = "";     // clear existing
     for(const key of allSet){
-        all.innerHTML += "<div id=" +key+ " onclick=keyAddClick(this)>" +key+ "</div>";
+        all.innerHTML += "<div class='clickable' onclick=keyAddClick(this) id=" +key+ ">" +key+ "</div>";
     }
 }
 
@@ -218,8 +218,8 @@ async function addGroupClick() { // user is adding a "message group"
     globals.groups.set(group, new Set() );
     let obj = { type: CMD.GRP_CREATE, grp: group };
     let ret = await storeData(obj);
-    // TODO: add error message if ret is not 200
-    grpsList.innerHTML += "<div onclick='groupClick(this)' id="+group+">" + group + "</div>";
+    // TODO: add error message if ret is not 200 // TODO: call showGroupsAndUsers() ???
+    grpsList.innerHTML += "<div  class='clickable' onclick='groupClick(this)' id="+group+">" + group + "</div>";
     field.value = "";
 }
 
