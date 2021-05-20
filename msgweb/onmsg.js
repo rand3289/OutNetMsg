@@ -29,7 +29,7 @@ async function storeData(obj){ // send data to server via HTTP POST
 
     return new Promise (
         function(resolve) { // Fuck, JS is so backwards!
-            req.onreadystatechange = function () { return resolve(this.status); }
+            req.onreadystatechange = function () { resolve(this.status); }
             req.send( jsn );
         }
     );
@@ -155,12 +155,25 @@ function showGroupsAndUsers(){
 }
 
 
-function keyAddClick(key){ // add key to group by clicking on a key
-    if(globals.lastGroup.length > 0){
-        let grp = globals.groups.get(globals.lastGroup);
-        grp.add(key.id);
-        console.log("Added " + key.id + " to group " +globals.lastGroup);
+async function keyAddClick(key){ // add key to group by clicking on a key
+    let group = globals.lastGroup;
+    if(group.length == 0){
+        let ok = confirm("Add user to Friends?\r\nOtherwise click CANCEL and select a group to add to a group.");
+        if(!ok){ return; }
+        group= "Friends";
     }
+
+    let addRequest = { type: CMD.GRP_ADD, grp: group, key: key.id };
+    let ret = await storeData(addRequest);
+    if(ret != 200){
+        alert("Error adding user to group.");
+        console.log("Error adding user to group. HTTP returned " + ret);
+        return;
+    }
+
+    let grp = globals.groups.get(group);
+    grp.add(key.id);
+    console.log("Added " + key.id + " to group " +group);
     showGroupsAndUsers();
 }
 
@@ -231,8 +244,8 @@ async function addGroupClick() { // user is adding a "message group"
     let obj = { type: CMD.GRP_CREATE, grp: group };
     let ret = await storeData(obj);
     if(ret != 200){
-        alert("Error sending message to server.");
-        console.log("Error sending message to server. HTTP returned " + ret);
+        alert("Error adding a group on the server.");
+        console.log("Error adding a group on the server. HTTP returned " + ret);
         return;
     }
 
