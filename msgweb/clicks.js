@@ -1,5 +1,20 @@
 // This file is part of OutNet Messenger  https://github.com/rand3289/OutNetMsg
+// It countains all onclick event handlers
 "use strict"; // helps detect errors
+
+
+function keyDelClick(grp, key){  // delete a key (user) from a group
+    console.log("Deleting key " +key+ " from group " +grp);
+    let group = globals.groups.get(grp);
+    group.delete(key); // TODO: notify user about deletion if it is your group / fail delete otherwise
+    showGroupsAndUsers();
+}
+
+
+function grpDelClick(grp){
+    globals.groups.delete(grp); // TODO: notify all userS about deletion if it is your group / fail delete otherwise
+    showGroupsAndUsers();
+}
 
 
 async function keyAddClick(key){ // add key to group by clicking on a key

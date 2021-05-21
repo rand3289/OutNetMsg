@@ -126,9 +126,11 @@ function showGroupsAndUsers(){
     groups.innerHTML = "";
     for (const [grp, keys] of globals.groups){
         if(grp == "Friends") { continue; } // Friends go in Friends DIV (see below)
-        groups.innerHTML += "<div class='clickable' onclick='groupClick(this)' id=" + grp + ">" + grp;
+        let rmb = "<button class='btn' onclick='grpDelClick(\""+grp+"\")'>-</button>";
+        groups.innerHTML += "<div class='clickable' onclick='groupClick(this)' id=" +grp + ">" +rmb+grp;
         for(const key of keys){
-            groups.innerHTML += "<div align='right' id=" +key+ ">" +key+ "</div>";
+            let btn = "<button class='btn' onclick='keyDelClick(\""+grp+"\",\""+key+"\")'>-</button>";
+            groups.innerHTML += "<div align='right' id=" +key+ ">" +btn+key+ "</div>";
         }
         groups.innerHTML += "</div>"; // group div
     }
@@ -137,7 +139,8 @@ function showGroupsAndUsers(){
     let friends = document.getElementById("Friends"); // now load friends
     friends.innerHTML = "";
     for(const key of globals.groups.get("Friends").values() ){
-        friends.innerHTML += "<div class='clickable' onclick='keyClick(this)' id=" +key+ ">" +key+ "</div>";
+        let btn = "<button class='btn' onclick='keyDelClick(\"Friends\",\""+key+"\")'>-</button>";
+        friends.innerHTML += "<div class='clickable' onclick='keyClick(this)' id=" +key+ ">" +btn+key+ "</div>";
     }
 
     let allSet = new Set(); // build a set of ALL known keys to remove duplicates
