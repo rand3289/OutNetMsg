@@ -124,13 +124,14 @@ async function getMessages() { // get all new messages for all keys/ groups
 function showGroupsAndUsers(){
     let groups = document.getElementById("Groups");
     groups.innerHTML = "";
+    globals.groups = new Map([...globals.groups.entries()].sort());
     for (const [grp, keys] of globals.groups){
         if(grp == "Friends") { continue; } // Friends go in Friends DIV (see below)
         let rmb = "<button class='btn' onclick='grpDelClick(\""+grp+"\")'>-</button>";
         groups.innerHTML += "<div class='clickable' onclick='groupClick(this)' id=" +grp + ">" +rmb+grp;
         for(const key of keys){
             let btn = "<button class='btn' onclick='keyDelClick(\""+grp+"\",\""+key+"\")'>-</button>";
-            groups.innerHTML += "<div align='right' id=" +key+ ">" +btn+key+ "</div>";
+            groups.innerHTML += "<div class='indented' id=" +key+ ">" +btn+key.substring(0,15)+ "</div>";
         }
         groups.innerHTML += "</div>"; // group div
     }
@@ -140,7 +141,7 @@ function showGroupsAndUsers(){
     friends.innerHTML = "";
     for(const key of globals.groups.get("Friends").values() ){
         let btn = "<button class='btn' onclick='keyDelClick(\"Friends\",\""+key+"\")'>-</button>";
-        friends.innerHTML += "<div class='clickable' onclick='keyClick(this)' id=" +key+ ">" +btn+key+ "</div>";
+        friends.innerHTML += "<div class='clickable' onclick='keyClick(this)' id=" +key+ ">" +btn+key.substring(0,15)+ "</div>";
     }
 
     let allSet = new Set(); // build a set of ALL known keys to remove duplicates
@@ -153,7 +154,7 @@ function showGroupsAndUsers(){
     let all = document.getElementById("AllUsers");
     all.innerHTML = "";     // clear existing
     for(const key of allSet){
-        all.innerHTML += "<div class='clickable' onclick=keyAddClick(this) id=" +key+ ">" +key+ "</div>";
+        all.innerHTML += "<div class='clickable' onclick=keyAddClick(this) id=" +key+ ">" +key.substring(0,15)+ "</div>";
     }
 
     let userLabel = document.getElementById("UserID"); // username next to SEND button

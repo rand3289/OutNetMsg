@@ -19,4 +19,7 @@ Messenger is written in C++.  To compile under linux or windows (using MinGW64 f
 * Implement all TODO: in the code
 * Figure out the best way to run OutNetMsg as a system service (OS dependent). Write wrappers and leave console apps as is?
 * Integrate OutNetMsg with OutNetTray app
+* Add user defined nicknames and pull their favicon.ico
+* Add an ability to send images / videos
 * Discover OutNet without config file via SSDP
+* Add an ability to export IP and KEY blacklists
