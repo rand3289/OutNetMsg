@@ -438,7 +438,10 @@ bool State::saveGroup(string& name){ // when groups are created/deleted/updated 
 
 
 bool State::loadGroups(){
+    Service svc;
     Key key;
+    peers[key] = svc;
+    peers[key].key = key;
     groups["Friends"] = {key, key, key, key}; // DEBUGGING !!!
     groups["group3"]  = {key, key, key};
     groups["group2"]  = {key, key};

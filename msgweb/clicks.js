@@ -95,7 +95,8 @@ async function findUserClick() { // user is trying to find a publick key by prov
         list.innerHTML = "Not found.";
     }
     else for(let i=0; i < data.keys.length; ++i) {
-        list.innerHTML += data.keys[i] + "<BR>\r\n";
+        let key = data.keys[i];
+        list.innerHTML +="<div class='clickable' onclick=keyAddClick(this) id=" +key+ ">" +key.substring(0,15)+ "</div>";
     }
 }
 
