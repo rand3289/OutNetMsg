@@ -6,7 +6,7 @@
         <script src="clicks.js"></script>
         <style>
             .btn { border-radius: 0px; border: 1px solid black; background-color:lightgreen;}
-            .tabtn { width: 80px; height: 22px; }
+            .tabtn { width: 80px; height: 22px; border: none;}
             .clickable { background-color:lightgreen; }
             .clickable:hover { background-color: green; }
             .indented { text-indent: 40px; }
@@ -37,12 +37,12 @@
             </div>
             <div id="Search" class="tabs">
                 <input type="text" id="GroupName">
-                <button class="btn" onclick="addGroupClick()" style="width: 100px;"
+                <button class="btn" onclick="addGroupClick()" style="width: 100px; border: none;"
                     title="Create a new chat group">Add Group</button>
                 <br>
 
                 <input type="text" id="UserKey">
-                <button class="btn" onclick="findUserClick()" style="width: 100px;"
+                <button class="btn" onclick="findUserClick()" style="width: 100px; border: none;"
                     title="To find a user, type a few consecutive digits from their key">Find User</button>
                 <div id="UserList"></div> <!-- users will be written here -->
 
@@ -52,7 +52,7 @@
             <div id="Chat" class="tabs" style="text-align: right;">  <!-- TODO: align to bottom -->
                 <div id="Messages"></div> <!-- messages will be written here -->
                 <textarea id="Msg" autofocus="true" rows="2" style="width:100%;" oninput="msgTyped()"></textarea>
-                <button class="btn" id="MsgButton" onclick="sendMsgClick()" disabled> SEND </button>
+                <button class="btn" id="MsgButton" onclick="sendMsgClick()" style="border:none; width:100px;" disabled> SEND </button>
             </div>
         </div>
     </div>
