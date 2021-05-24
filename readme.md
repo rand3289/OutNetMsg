@@ -23,3 +23,4 @@ Messenger is written in C++.  To compile under linux or windows (using MinGW64 f
 * Add an ability to send images / videos
 * Discover OutNet without config file via SSDP
 * Add an ability to export IP and KEY blacklists
+* Add authentication
