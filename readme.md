@@ -24,3 +24,5 @@ Messenger is written in C++.  To compile under linux or windows (using MinGW64 f
 * Discover OutNet without config file via SSDP
 * Add an ability to export IP and KEY blacklists
 * Add authentication
+
+This repository was cloned from https://github.com/rand3289/OutNetMsg

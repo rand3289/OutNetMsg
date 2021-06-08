@@ -50,6 +50,7 @@ function tabBtnClick(event, elemID){ // a button that switches tabs on the right
     console.log("tab: "+ elemID);
     let div = document.getElementById(elemID)
     div.style.display = "block";
+//    event.target.backgroundColor = 0xFFFF00;
 }
 
 
